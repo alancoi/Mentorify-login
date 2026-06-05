@@ -10,7 +10,6 @@ export default function AlumnosPanel() {
   const [error, setError] = useState(null);
   const [selectedAlumno, setSelectedAlumno] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [coachId, setCoachId] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
@@ -29,28 +28,33 @@ export default function AlumnosPanel() {
   async function initializeCoach() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) throw new Error('No user');
 
       // Get or create coach
-      let { data: coach } = await supabase
+      let { data: coach, error: getError } = await supabase
         .from('coaches')
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
 
+      if (getError && getError.code !== 'PGRST116') throw getError;
+
       if (!coach) {
-        const { data: newCoach } = await supabase
+        const { data: newCoach, error: insertError } = await supabase
           .from('coaches')
           .insert([{ user_id: user.id, nombre: user.email.split('@')[0] }])
-          .select('id')
-          .single();
-        coach = newCoach;
+          .select();
+        
+        if (insertError) throw insertError;
+        if (!newCoach || newCoach.length === 0) throw new Error('Failed to create coach');
+        coach = newCoach[0];
       }
 
+      if (!coach || !coach.id) throw new Error('No coach ID');
       setCoachId(coach.id);
       loadAlumnos(coach.id);
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Init error:', err);
       setError(err.message);
       setLoading(false);
     }
@@ -58,14 +62,17 @@ export default function AlumnosPanel() {
 
   async function loadAlumnos(cId) {
     try {
-      const { data } = await supabase
+      if (!cId) throw new Error('No coach ID');
+      const { data, error: err } = await supabase
         .from('alumnos')
         .select('*')
         .eq('coach_id', cId)
         .order('created_at', { ascending: false });
+      
+      if (err) throw err;
       setAlumnos(data || []);
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Load error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -82,10 +89,17 @@ export default function AlumnosPanel() {
   async function handleAddAlumno(e) {
     e.preventDefault();
     try {
+      if (!coachId) throw new Error('Coach not initialized');
+      
       const { error: err } = await supabase.from('alumnos').insert([{
-        ...formData,
-        coach_id: coachId,
-        plan_precio: parseFloat(formData.plan_precio) || 0
+        nombre: formData.nombre,
+        email: formData.email,
+        fecha_inicio: formData.fecha_inicio || null,
+        fecha_renovacion: formData.fecha_renovacion || null,
+        plan_tipo: formData.plan_tipo,
+        plan_precio: parseFloat(formData.plan_precio) || 0,
+        estado: formData.estado,
+        coach_id: coachId
       }]);
       
       if (err) throw err;
@@ -130,7 +144,10 @@ export default function AlumnosPanel() {
   const stats = {
     total: alumnos.length,
     activos: alumnos.filter(a => a.estado === 'Activo').length,
-    vencerse: alumnos.filter(a => calcularDiasRestantes(a.fecha_renovacion) <= 3 && calcularDiasRestantes(a.fecha_renovacion) !== null).length,
+    vencerse: alumnos.filter(a => {
+      const dr = calcularDiasRestantes(a.fecha_renovacion);
+      return dr !== null && dr <= 3;
+    }).length,
   };
 
   if (loading) {
