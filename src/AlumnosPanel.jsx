@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabase';
-import { ensureCoach, getAlumnosFull, createAlumnoFull, updateCoachPreferences, getCoachPreferences } from './services/supabaseQueries';
 import './AlumnosPanel.css';
 
 export default function AlumnosPanel() {
@@ -8,10 +7,11 @@ export default function AlumnosPanel() {
   const [filtro, setFiltro] = useState('Activo');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedAlumno, setSelectedAlumno] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [preferences, setPreferences] = useState(null);
+  const [coachId, setCoachId] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -19,27 +19,54 @@ export default function AlumnosPanel() {
     fecha_renovacion: '',
     plan_tipo: 'Básico',
     plan_precio: '',
-    estado_pago: 'Al día',
-    nivel: 'Básico',
     estado: 'Activo'
   });
 
   useEffect(() => {
-    loadData();
+    initializeCoach();
   }, []);
 
-  async function loadData() {
+  async function initializeCoach() {
     try {
-      setLoading(true);
-      await ensureCoach();
-      const [alumnosData, prefsData] = await Promise.all([
-        getAlumnosFull(),
-        getCoachPreferences()
-      ]);
-      setAlumnos(alumnosData);
-      setPreferences(prefsData);
-    } catch (error) {
-      console.error('Error:', error);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get or create coach
+      let { data: coach } = await supabase
+        .from('coaches')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!coach) {
+        const { data: newCoach } = await supabase
+          .from('coaches')
+          .insert([{ user_id: user.id, nombre: user.email.split('@')[0] }])
+          .select('id')
+          .single();
+        coach = newCoach;
+      }
+
+      setCoachId(coach.id);
+      loadAlumnos(coach.id);
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.message);
+      setLoading(false);
+    }
+  }
+
+  async function loadAlumnos(cId) {
+    try {
+      const { data } = await supabase
+        .from('alumnos')
+        .select('*')
+        .eq('coach_id', cId)
+        .order('created_at', { ascending: false });
+      setAlumnos(data || []);
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -55,11 +82,14 @@ export default function AlumnosPanel() {
   async function handleAddAlumno(e) {
     e.preventDefault();
     try {
-      const dataToSave = {
+      const { error: err } = await supabase.from('alumnos').insert([{
         ...formData,
+        coach_id: coachId,
         plan_precio: parseFloat(formData.plan_precio) || 0
-      };
-      await createAlumnoFull(dataToSave);
+      }]);
+      
+      if (err) throw err;
+      
       setFormData({
         nombre: '',
         email: '',
@@ -67,25 +97,12 @@ export default function AlumnosPanel() {
         fecha_renovacion: '',
         plan_tipo: 'Básico',
         plan_precio: '',
-        estado_pago: 'Al día',
-        nivel: 'Básico',
         estado: 'Activo'
       });
       setShowForm(false);
-      loadData();
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al agregar alumno: ' + error.message);
-    }
-  }
-
-  async function handleTogglePreference(key) {
-    try {
-      const newVal = !preferences[key];
-      const updated = await updateCoachPreferences({ [key]: newVal });
-      setPreferences(updated);
-    } catch (error) {
-      console.error('Error:', error);
+      loadAlumnos(coachId);
+    } catch (err) {
+      alert('Error: ' + err.message);
     }
   }
 
@@ -113,10 +130,16 @@ export default function AlumnosPanel() {
   const stats = {
     total: alumnos.length,
     activos: alumnos.filter(a => a.estado === 'Activo').length,
-    vencerse: alumnos.filter(a => calcularDiasRestantes(a.fecha_renovacion) <= 3).length,
+    vencerse: alumnos.filter(a => calcularDiasRestantes(a.fecha_renovacion) <= 3 && calcularDiasRestantes(a.fecha_renovacion) !== null).length,
   };
 
-  if (!preferences) return <div style={{ padding: '20px' }}>Cargando...</div>;
+  if (loading) {
+    return <div style={{ padding: '40px', textAlign: 'center', fontSize: '18px', color: '#666' }}>Cargando...</div>;
+  }
+
+  if (error) {
+    return <div style={{ padding: '40px', textAlign: 'center', fontSize: '16px', color: '#f00' }}>Error: {error}</div>;
+  }
 
   return (
     <div className="panel-container">
@@ -132,55 +155,9 @@ export default function AlumnosPanel() {
           </div>
         </div>
         <div className="header-right">
-          <button onClick={() => setShowSettings(!showSettings)} className="btn-settings">
-            ⚙️ Preferencias
-          </button>
           <button onClick={handleLogout} className="btn-logout">Salir</button>
         </div>
       </header>
-
-      {showSettings && (
-        <div className="settings-panel">
-          <h3>Personaliza tu panel</h3>
-          <div className="settings-grid">
-            <label className="setting-item">
-              <input type="checkbox" checked={preferences.mostrar_pagos} onChange={() => handleTogglePreference('mostrar_pagos')} />
-              <span>Mostrar información de pagos</span>
-            </label>
-            <label className="setting-item">
-              <input type="checkbox" checked={preferences.mostrar_proxima_sesion} onChange={() => handleTogglePreference('mostrar_proxima_sesion')} />
-              <span>Próxima sesión</span>
-            </label>
-            <label className="setting-item">
-              <input type="checkbox" checked={preferences.mostrar_dias_restantes} onChange={() => handleTogglePreference('mostrar_dias_restantes')} />
-              <span>Días restantes</span>
-            </label>
-            <label className="setting-item">
-              <input type="checkbox" checked={preferences.mostrar_actividad} onChange={() => handleTogglePreference('mostrar_actividad')} />
-              <span>Estado de actividad</span>
-            </label>
-          </div>
-          <div className="notif-divider">Notificaciones automáticas</div>
-          <div className="settings-grid">
-            <label className="setting-item">
-              <input type="checkbox" checked={preferences.notificar_3_dias} onChange={() => handleTogglePreference('notificar_3_dias')} />
-              <span>Enviar 3 días antes</span>
-            </label>
-            <label className="setting-item">
-              <input type="checkbox" checked={preferences.notificar_2_dias} onChange={() => handleTogglePreference('notificar_2_dias')} />
-              <span>Enviar 2 días antes</span>
-            </label>
-            <label className="setting-item">
-              <input type="checkbox" checked={preferences.notificar_1_dia} onChange={() => handleTogglePreference('notificar_1_dia')} />
-              <span>Enviar 1 día antes</span>
-            </label>
-            <label className="setting-item">
-              <input type="checkbox" checked={preferences.notificar_mismo_dia} onChange={() => handleTogglePreference('notificar_mismo_dia')} />
-              <span>Enviar el mismo día</span>
-            </label>
-          </div>
-        </div>
-      )}
 
       <section className="stats">
         <div className="stat-card">
@@ -263,11 +240,6 @@ export default function AlumnosPanel() {
               value={formData.plan_precio}
               onChange={(e) => setFormData({...formData, plan_precio: e.target.value})}
             />
-            <select value={formData.nivel} onChange={(e) => setFormData({...formData, nivel: e.target.value})}>
-              <option>Básico</option>
-              <option>Medio</option>
-              <option>Alto</option>
-            </select>
           </div>
           <div className="form-buttons">
             <button type="submit" className="btn-primary">Guardar alumno</button>
@@ -277,9 +249,7 @@ export default function AlumnosPanel() {
       )}
 
       <section className="alumnos-list">
-        {loading ? (
-          <p className="empty">Cargando...</p>
-        ) : filteredAlumnos.length === 0 ? (
+        {filteredAlumnos.length === 0 ? (
           <p className="empty">No hay alumnos. ¡Agrega tu primer alumno!</p>
         ) : (
           <div className="alumnos-grid">
@@ -294,14 +264,14 @@ export default function AlumnosPanel() {
                   
                   {alumno.email && <p className="card-email">📧 {alumno.email}</p>}
                   
-                  {preferences.mostrar_pagos && alumno.plan_tipo && (
+                  {alumno.plan_tipo && (
                     <div className="card-section">
                       <div className="section-title">Plan</div>
                       <p>{alumno.plan_tipo} ${alumno.plan_precio}</p>
                     </div>
                   )}
 
-                  {preferences.mostrar_dias_restantes && alumno.fecha_renovacion && (
+                  {alumno.fecha_renovacion && (
                     <div className="card-section">
                       <div className="section-title">Estado</div>
                       <div className="dias-badge">{getEstadoPago(diasRestantes)}</div>
@@ -319,7 +289,7 @@ export default function AlumnosPanel() {
 
                   <div className="card-actions">
                     <button onClick={() => setSelectedAlumno(alumno)} className="btn-small">Ver detalle</button>
-                    <button className="btn-small btn-mail">📧 Enviar mail</button>
+                    <button className="btn-small btn-mail">📧 Mail</button>
                   </div>
                 </div>
               );
@@ -338,7 +308,6 @@ export default function AlumnosPanel() {
               {selectedAlumno.fecha_inicio && <p><strong>Inicio:</strong> {new Date(selectedAlumno.fecha_inicio).toLocaleDateString('es-AR')}</p>}
               {selectedAlumno.fecha_renovacion && <p><strong>Renovación:</strong> {new Date(selectedAlumno.fecha_renovacion).toLocaleDateString('es-AR')}</p>}
               {selectedAlumno.estado && <p><strong>Estado:</strong> {selectedAlumno.estado}</p>}
-              {selectedAlumno.nivel && <p><strong>Nivel:</strong> {selectedAlumno.nivel}</p>}
             </div>
             <button onClick={() => setSelectedAlumno(null)} className="btn-secondary">Cerrar</button>
           </div>
