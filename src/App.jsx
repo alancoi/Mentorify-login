@@ -2,64 +2,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
 import LoginPage from './LoginPage'
 import SetPasswordPage from './SetPasswordPage'
+import AlumnosPanel from './AlumnosPanel'
 import Logo from './Logo'
-
-function Dashboard({ user, onLogout }) {
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--white-soft)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '16px',
-      animation: 'fadeUp 0.4s ease',
-    }}>
-      <Logo size={40} />
-      <h1 style={{
-        fontFamily: "'Poppins', sans-serif",
-        fontWeight: 700,
-        fontSize: '28px',
-        color: 'var(--navy)',
-      }}>
-        ¡Bienvenido a Mentorify!
-      </h1>
-      <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>
-        Sesión activa como <strong>{user.email}</strong>
-      </p>
-      <div style={{
-        background: 'var(--purple-light)',
-        border: '1px solid var(--purple-border)',
-        borderRadius: '12px',
-        padding: '16px 24px',
-        fontSize: '14px',
-        color: 'var(--purple-deep)',
-        textAlign: 'center',
-        maxWidth: '360px',
-        lineHeight: 1.6,
-      }}>
-        Acá irá el panel principal de alumnos. El login está funcionando con Supabase. 🎉
-      </div>
-      <button
-        onClick={onLogout}
-        style={{
-          marginTop: '8px',
-          padding: '10px 20px',
-          borderRadius: '8px',
-          border: '1.5px solid var(--border)',
-          background: '#fff',
-          color: 'var(--text-muted)',
-          fontSize: '13px',
-          cursor: 'pointer',
-          fontFamily: 'Inter, sans-serif',
-        }}
-      >
-        Cerrar sesión
-      </button>
-    </div>
-  )
-}
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -119,5 +63,5 @@ export default function App() {
     return <LoginPage onLogin={(user) => setSession({ user })} />
   }
 
-  return <Dashboard user={session.user} onLogout={handleLogout} />
+  return <AlumnosPanel />
 }
