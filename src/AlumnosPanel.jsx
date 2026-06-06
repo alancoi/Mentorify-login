@@ -209,7 +209,7 @@ export default function AlumnosPanel() {
     const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
     
     const inicioMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-    const finDiaEquivalenteMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, diaActual);
+    const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
 
     // Clientes nuevos este mes
     const clientesNuevos = alumnos.filter(a => {
@@ -225,11 +225,11 @@ export default function AlumnosPanel() {
       })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    // Ingresos mes pasado (mismo día del mes actual)
+    // Ingresos mes pasado COMPLETO
     const totalIngresoMesPasado = alumnos
       .filter(a => {
         const fechaInicio = new Date(a.fecha_inicio);
-        return fechaInicio >= inicioMesPasado && fechaInicio <= finDiaEquivalenteMesPasado;
+        return fechaInicio >= inicioMesPasado && fechaInicio <= finMesPasado;
       })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
     
@@ -238,9 +238,9 @@ export default function AlumnosPanel() {
       .filter(a => a.estado === 'Activo')
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    // Comparación de ingresos
+    // Comparación: % del mes pasado que llevas facturado
     const porcentajeComparacion = totalIngresoMesPasado > 0 
-      ? ((totalIngresoEsteMes - totalIngresoMesPasado) / totalIngresoMesPasado * 100).toFixed(1)
+      ? (totalIngresoEsteMes / totalIngresoMesPasado * 100).toFixed(1)
       : (totalIngresoEsteMes > 0 ? 100 : 0);
 
     const diasTranscurridos = hoy.getDate();
