@@ -276,20 +276,12 @@ export default function AlumnosPanel() {
     <div className="panel-container">
       <header className="panel-header">
         <div className="header-left">
-          <svg className="logo-icon" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{stopColor: '#6C4DFF', stopOpacity: 1}} />
-                <stop offset="100%" style={{stopColor: '#482DDB', stopOpacity: 1}} />
-              </linearGradient>
-            </defs>
-            {/* Infinito - lazo izquierdo */}
-            <path d="M 40 60 C 40 40, 50 30, 65 30 C 80 30, 85 40, 85 55 C 85 70, 80 80, 65 80 C 50 80, 40 70, 40 60" 
-              fill="none" stroke="url(#logoGradient)" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round"/>
-            {/* Infinito - lazo derecho */}
-            <path d="M 115 60 C 115 40, 120 30, 135 30 C 150 30, 160 40, 160 55 C 160 70, 150 80, 135 80 C 120 80, 115 70, 115 60" 
-              fill="none" stroke="url(#logoGradient)" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <img 
+            src="https://i.postimg.cc/JG918Zps/2__5_.png" 
+            alt="Mentorify Logo"
+            className="logo-icon"
+            style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+          />
           <div className="header-text">
             <h1>Mentorify</h1>
             <p>Panel de Alumnos</p>
