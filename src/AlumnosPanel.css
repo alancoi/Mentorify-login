@@ -72,13 +72,29 @@
   box-shadow: 0 4px 12px rgba(108, 77, 255, 0.3);
 }
 
-.ganancia-section {
-  background: white;
-  padding: 2rem;
+.ganancia-button-container {
+  padding: 1rem 2rem 0 2rem;
   max-width: 1400px;
-  margin: 1.5rem auto;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
+}
+
+.btn-ganancia-fine {
+  width: 100%;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.btn-ganancia-fine:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 .settings-section {

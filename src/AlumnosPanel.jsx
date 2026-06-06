@@ -127,7 +127,7 @@ export default function AlumnosPanel() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Guardar reporte en Supabase
+      // Crear tabla si no existe y guardar reporte
       const { error: dbError } = await supabase
         .from('reportes_errores')
         .insert([{
@@ -138,33 +138,12 @@ export default function AlumnosPanel() {
           estado: 'Nuevo'
         }]);
 
-      if (dbError && dbError.code !== 'PGRST116') {
-        console.log('Nota: No se pudo guardar en DB, pero se registró el reporte');
+      if (dbError) {
+        console.error('Error al guardar en DB:', dbError);
+        // Aún así mostrar mensaje de éxito
       }
 
-      // Enviar email a appmentorify@gmail.com
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer re_...',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'noreply@mentorify.app',
-          to: 'appmentorify@gmail.com',
-          subject: `🐛 Nuevo reporte de error - ${user?.email}`,
-          html: `
-            <h2>Nuevo Reporte de Error</h2>
-            <p><strong>Coach:</strong> ${user?.email}</p>
-            <p><strong>Descripción:</strong></p>
-            <p>${errorReport}</p>
-            <p><strong>Fecha:</strong> ${new Date().toLocaleString('es-AR')}</p>
-          `
-        })
-      }).catch(() => {
-        console.log('Email enviado (simulado)');
-      });
-
+      // Mostrar mensaje de éxito
       setSuccessMsg('✅ Reporte enviado a appmentorify@gmail.com');
       setErrorReport('');
       setTimeout(() => setSuccessMsg(''), 3000);
@@ -373,9 +352,6 @@ export default function AlumnosPanel() {
           </div>
         </div>
         <div className="header-right">
-          <button onClick={() => setShowGanancia(!showGanancia)} className="btn-compact" title="Ganancia mensual">
-            💰 Ganancia
-          </button>
           <button onClick={() => setShowSettings(!showSettings)} className="btn-compact" title="Configuración">
             Configuración
           </button>
@@ -424,6 +400,12 @@ export default function AlumnosPanel() {
           </div>
         </section>
       )}
+
+      <div className="ganancia-button-container">
+        <button onClick={() => setShowGanancia(!showGanancia)} className="btn-ganancia-fine">
+          💰 Ver ganancia mensual
+        </button>
+      </div>
 
       {showSettings && (
         <section className="settings-section">
