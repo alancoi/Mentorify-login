@@ -59,6 +59,19 @@ Región: West US (Oregon)
 
 ---
 
+## 📱 MOBILE-FIRST (Coaches en celular)
+
+✅ Optimizada para iPhone/Android
+✅ Responsive: Tablet (768px) + Mobile (480px)
+✅ Touch-friendly: Botones min 44px
+✅ Tabla: Scroll horizontal suave
+✅ Formularios: 1 columna en mobile
+✅ Inputs: 16px font-size (no zoom auto)
+✅ Modales: 95% ancho celular
+✅ Probado en iPhone ✨
+
+---
+
 ## ✨ FEATURES
 
 ✅ Autenticación multi-tenant
