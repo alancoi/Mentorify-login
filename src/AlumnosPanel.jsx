@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabase';
+import * as XLSX from 'xlsx';
 import './AlumnosPanel.css';
 
 export default function AlumnosPanel() {
@@ -140,14 +141,25 @@ export default function AlumnosPanel() {
           if (row.nombre) data.push(row);
         }
       } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        // Procesar XLSX
-        const { default: XLSX } = await import('xlsx');
-        const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(worksheet);
+        // Procesar XLSX con FileReader
+        const reader = new FileReader();
         
-        data = rows.map(row => {
+        const fileData = await new Promise((resolve, reject) => {
+          reader.onload = (evt) => {
+            try {
+              const workbook = XLSX.read(evt.target.result, { type: 'binary' });
+              const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+              const rows = XLSX.utils.sheet_to_json(worksheet);
+              resolve(rows);
+            } catch (err) {
+              reject(err);
+            }
+          };
+          reader.onerror = () => reject(new Error('Error reading file'));
+          reader.readAsBinaryString(file);
+        });
+
+        data = fileData.map(row => {
           const normalized = {};
           Object.keys(row).forEach(key => {
             normalized[key.toLowerCase().replace(/\s+/g, '_')] = row[key] || '';
