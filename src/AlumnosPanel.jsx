@@ -186,9 +186,9 @@ export default function AlumnosPanel() {
 
   const getEstadoBadge = (diasRestantes) => {
     if (diasRestantes === null) return { texto: 'Sin plan', clase: 'sin-plan' };
-    if (diasRestantes < 0) return { texto: `${Math.abs(diasRestantes)}d vencido`, clase: 'vencido' };
+    if (diasRestantes < 0) return { texto: `${Math.abs(diasRestantes)} días vencido`, clase: 'vencido' };
     if (diasRestantes === 0) return { texto: 'Vence hoy', clase: 'vence-hoy' };
-    if (diasRestantes <= 3) return { texto: `${diasRestantes}d`, clase: 'proximo-vencer' };
+    if (diasRestantes <= 3) return { texto: `${diasRestantes} días`, clase: 'proximo-vencer' };
     return { texto: 'Al día', clase: 'al-dia' };
   };
 
