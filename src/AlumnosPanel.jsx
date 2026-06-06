@@ -181,38 +181,40 @@ export default function AlumnosPanel() {
     }
   }
 
-  async function handleConfirmImport() {
-    if (!importData.length) {
-      alert('No hay datos para importar');
-      return;
-    }
-
+  async function handleExportToExcel() {
     try {
-      const alumnosToInsert = importData.map(row => ({
-        coach_id: coachId,
-        nombre: row.nombre || '',
-        email: row.email || '',
-        plan_tipo: row.plan_tipo || 'Básico',
-        plan_precio: parseFloat(row.plan_precio) || 0,
-        fecha_inicio: row.fecha_inicio || null,
-        fecha_renovacion: row.fecha_renovacion || null,
-        estado: row.estado || 'Activo',
-        notas: row.notas || ''
+      const dataToExport = alumnos.map(alumno => ({
+        nombre: alumno.nombre || '',
+        email: alumno.email || '',
+        plan_tipo: alumno.plan_tipo || '',
+        plan_precio: alumno.plan_precio || '',
+        fecha_inicio: alumno.fecha_inicio || '',
+        fecha_renovacion: alumno.fecha_renovacion || '',
+        estado: alumno.estado || '',
+        notas: alumno.notas || ''
       }));
 
-      const { error: err } = await supabase
-        .from('alumnos')
-        .insert(alumnosToInsert);
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Alumnos');
 
-      if (err) throw err;
+      // Ajustar ancho de columnas
+      worksheet['!cols'] = [
+        { wch: 20 }, // nombre
+        { wch: 25 }, // email
+        { wch: 15 }, // plan_tipo
+        { wch: 12 }, // plan_precio
+        { wch: 15 }, // fecha_inicio
+        { wch: 15 }, // fecha_renovacion
+        { wch: 12 }, // estado
+        { wch: 30 }  // notas
+      ];
 
-      setSuccessMsg(`✅ ${importData.length} alumnos importados exitosamente`);
-      setImportData([]);
-      setShowImport(false);
+      XLSX.writeFile(workbook, `mentorify_alumnos_${new Date().toISOString().split('T')[0]}.xlsx`);
+      setSuccessMsg('✅ Excel descargado exitosamente');
       setTimeout(() => setSuccessMsg(''), 3000);
-      loadAlumnos(coachId);
     } catch (err) {
-      alert('Error al importar: ' + err.message);
+      alert('Error al descargar: ' + err.message);
     }
   }
 
@@ -616,6 +618,9 @@ export default function AlumnosPanel() {
         </button>
         <button onClick={() => setShowImport(!showImport)} className="btn-secondary" style={{ marginLeft: '0.5rem' }}>
           📥 Importar Excel
+        </button>
+        <button onClick={handleExportToExcel} className="btn-secondary" style={{ marginLeft: '0.5rem' }}>
+          📤 Descargar Excel
         </button>
       </section>
 
