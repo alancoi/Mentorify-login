@@ -13,7 +13,12 @@ export default function AlumnosPanel() {
   const [editingAlumno, setEditingAlumno] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showGanancia, setShowGanancia] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [coachId, setCoachId] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorReport, setErrorReport] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -82,6 +87,55 @@ export default function AlumnosPanel() {
     }
   }
 
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setSuccessMsg('');
+    setErrorReport('');
+
+    if (newPassword !== confirmPassword) {
+      setErrorReport('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setErrorReport('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    try {
+      const { error: err } = await supabase.auth.updateUser({ password: newPassword });
+      if (err) throw err;
+      setSuccessMsg('✅ Contraseña cambiada exitosamente');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => {
+        setShowSettings(false);
+        setSuccessMsg('');
+      }, 2000);
+    } catch (err) {
+      setErrorReport('Error: ' + err.message);
+    }
+  }
+
+  async function handleReportError(e) {
+    e.preventDefault();
+    if (!errorReport.trim()) {
+      alert('Por favor describe el error');
+      return;
+    }
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Error reportado:', { user: user?.email, error: errorReport, timestamp: new Date() });
+      
+      setSuccessMsg('✅ Reporte enviado exitosamente');
+      setErrorReport('');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      alert('Error al enviar el reporte: ' + err.message);
+    }
+  }
+
   const filteredAlumnos = alumnos.filter(a => {
     const matchFiltro = filtro === 'Todos' || a.estado === filtro;
     const matchSearch = a.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,7 +149,6 @@ export default function AlumnosPanel() {
       if (!coachId) throw new Error('Coach not initialized');
       
       if (editingAlumno) {
-        // Actualizar alumno existente
         const { error: err } = await supabase
           .from('alumnos')
           .update({
@@ -112,7 +165,6 @@ export default function AlumnosPanel() {
         
         if (err) throw err;
       } else {
-        // Crear nuevo alumno
         const { error: err } = await supabase.from('alumnos').insert([{
           nombre: formData.nombre,
           email: formData.email,
@@ -146,6 +198,17 @@ export default function AlumnosPanel() {
     }
   }
 
+  async function handleDeleteAlumno(id) {
+    if (!confirm('¿Eliminar este alumno?')) return;
+    try {
+      const { error: err } = await supabase.from('alumnos').delete().eq('id', id);
+      if (err) throw err;
+      loadAlumnos(coachId);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
   function handleEditAlumno(alumno) {
     setEditingAlumno(alumno);
     setFormData({
@@ -159,17 +222,6 @@ export default function AlumnosPanel() {
       notas: alumno.notas || ''
     });
     setShowForm(true);
-  }
-
-  async function handleDeleteAlumno(id) {
-    if (!confirm('¿Eliminar este alumno?')) return;
-    try {
-      const { error: err } = await supabase.from('alumnos').delete().eq('id', id);
-      if (err) throw err;
-      loadAlumnos(coachId);
-    } catch (err) {
-      alert('Error: ' + err.message);
-    }
   }
 
   async function handleLogout() {
@@ -201,7 +253,6 @@ export default function AlumnosPanel() {
     }).length,
   };
 
-  // Calcular ganancia mensual
   const calcularGanancia = () => {
     const hoy = new Date();
     const diaActual = hoy.getDate();
@@ -211,13 +262,11 @@ export default function AlumnosPanel() {
     const inicioMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
     const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
 
-    // Clientes nuevos este mes
     const clientesNuevos = alumnos.filter(a => {
       const fechaInicio = new Date(a.fecha_inicio);
       return fechaInicio >= inicioMes && fechaInicio <= finMes;
     });
 
-    // Ingresos este mes (hasta hoy)
     const totalIngresoEsteMes = alumnos
       .filter(a => {
         const fechaInicio = new Date(a.fecha_inicio);
@@ -225,7 +274,6 @@ export default function AlumnosPanel() {
       })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    // Ingresos mes pasado COMPLETO
     const totalIngresoMesPasado = alumnos
       .filter(a => {
         const fechaInicio = new Date(a.fecha_inicio);
@@ -238,7 +286,6 @@ export default function AlumnosPanel() {
       .filter(a => a.estado === 'Activo')
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    // Comparación: % del mes pasado que llevas facturado
     const porcentajeComparacion = totalIngresoMesPasado > 0 
       ? (totalIngresoEsteMes / totalIngresoMesPasado * 100).toFixed(1)
       : (totalIngresoEsteMes > 0 ? 100 : 0);
@@ -280,18 +327,22 @@ export default function AlumnosPanel() {
             src="https://i.postimg.cc/JG918Zps/2__5_.png" 
             alt="Mentorify Logo"
             className="logo-icon"
-            style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+            style={{ width: '40px', height: '40px', objectFit: 'contain' }}
           />
           <div className="header-text">
             <h1>Mentorify</h1>
-            <p>Panel de Alumnos</p>
           </div>
         </div>
         <div className="header-right">
-          <button onClick={() => setShowGanancia(!showGanancia)} className="btn-ganancia">
-            💰 Ganancia mensual
+          <button onClick={() => setShowGanancia(!showGanancia)} className="btn-icon" title="Ganancia mensual">
+            💰
           </button>
-          <button onClick={handleLogout} className="btn-logout">Salir</button>
+          <button onClick={() => setShowSettings(!showSettings)} className="btn-icon" title="Configuración">
+            ⚙️
+          </button>
+          <button onClick={handleLogout} className="btn-icon" title="Salir">
+            🚪
+          </button>
         </div>
       </header>
 
@@ -331,6 +382,51 @@ export default function AlumnosPanel() {
               <div className="ganancia-value">{ganancia.proximosVencer}</div>
               <div className="ganancia-subtitle">a renovar</div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {showSettings && (
+        <section className="settings-section">
+          <div className="settings-content">
+            <h2>⚙️ Configuración</h2>
+
+            <div className="settings-tab">
+              <h3>🔐 Cambiar Contraseña</h3>
+              <form onSubmit={handleChangePassword} className="settings-form">
+                <input 
+                  type="password" 
+                  placeholder="Nueva contraseña"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+                <input 
+                  type="password" 
+                  placeholder="Confirmar contraseña"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+                <button type="submit" className="btn-primary">Cambiar contraseña</button>
+              </form>
+            </div>
+
+            <div className="settings-tab">
+              <h3>📢 Reportar Error</h3>
+              <form onSubmit={handleReportError} className="settings-form">
+                <textarea 
+                  placeholder="Describe el error que encontraste..."
+                  value={errorReport}
+                  onChange={(e) => setErrorReport(e.target.value)}
+                  rows="4"
+                />
+                <button type="submit" className="btn-primary">Enviar reporte</button>
+              </form>
+            </div>
+
+            {successMsg && <p className="success-msg">{successMsg}</p>}
+            <button onClick={() => setShowSettings(false)} className="btn-secondary">Cerrar</button>
           </div>
         </section>
       )}
@@ -538,23 +634,6 @@ export default function AlumnosPanel() {
           </div>
         )}
       </section>
-
-      {selectedAlumno && (
-        <div className="modal-overlay" onClick={() => setSelectedAlumno(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{selectedAlumno.nombre}</h2>
-            <div className="modal-content">
-              {selectedAlumno.email && <p><strong>Email:</strong> {selectedAlumno.email}</p>}
-              {selectedAlumno.plan_tipo && <p><strong>Plan:</strong> {selectedAlumno.plan_tipo} - ${selectedAlumno.plan_precio}</p>}
-              {selectedAlumno.fecha_inicio && <p><strong>Fecha de inicio:</strong> {new Date(selectedAlumno.fecha_inicio).toLocaleDateString('es-AR')}</p>}
-              {selectedAlumno.fecha_renovacion && <p><strong>Fecha de finalización:</strong> {new Date(selectedAlumno.fecha_renovacion).toLocaleDateString('es-AR')}</p>}
-              {selectedAlumno.estado && <p><strong>Estado:</strong> {selectedAlumno.estado}</p>}
-              {selectedAlumno.notas && <p><strong>Notas:</strong> {selectedAlumno.notas}</p>}
-            </div>
-            <button onClick={() => setSelectedAlumno(null)} className="btn-secondary">Cerrar</button>
-          </div>
-        </div>
-      )}
 
       {selectedNota && (
         <div className="modal-overlay" onClick={() => setSelectedNota(null)}>
