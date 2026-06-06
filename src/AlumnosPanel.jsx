@@ -127,8 +127,8 @@ export default function AlumnosPanel() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Crear tabla si no existe y guardar reporte
-      const { error: dbError } = await supabase
+      // Guardar reporte en Supabase
+      await supabase
         .from('reportes_errores')
         .insert([{
           coach_id: coachId,
@@ -136,21 +136,28 @@ export default function AlumnosPanel() {
           descripcion: errorReport,
           fecha: new Date().toISOString(),
           estado: 'Nuevo'
-        }]);
+        }])
+        .catch(() => {
+          console.log('Nota: No se pudo guardar en DB');
+        });
 
-      if (dbError) {
-        console.error('Error al guardar en DB:', dbError);
-        // Aún así mostrar mensaje de éxito
-      }
+      // Preparar el contenido del email
+      const subject = `🐛 Reporte de Error - ${user?.email}`;
+      const body = `Hola,\n\nReporte de error desde Mentorify:\n\n${errorReport}\n\nFecha: ${new Date().toLocaleString('es-AR')}\nCoach: ${user?.email}`;
+      
+      // Abrir cliente de email nativo
+      const mailtoLink = `mailto:appmentorify@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailtoLink;
 
-      // Mostrar mensaje de éxito
-      setSuccessMsg('✅ Reporte enviado a appmentorify@gmail.com');
+      // Mostrar mensaje
+      setSuccessMsg('✅ Abriendo tu email...');
       setErrorReport('');
-      setTimeout(() => setSuccessMsg(''), 3000);
+      setTimeout(() => {
+        setShowSettings(false);
+        setSuccessMsg('');
+      }, 2000);
     } catch (err) {
       console.error('Error:', err);
-      setSuccessMsg('✅ Reporte registrado');
-      setErrorReport('');
     }
   }
 
