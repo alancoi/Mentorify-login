@@ -668,39 +668,336 @@
 }
 
 @media (max-width: 768px) {
+  .panel-container {
+    padding-bottom: 20px;
+  }
+
+  .panel-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .header-left {
+    gap: 0.8rem;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header-text h1 {
+    font-size: 20px;
+  }
+
+  .header-text p {
+    font-size: 11px;
+  }
+
+  .header-right {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .btn-ganancia {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    font-size: 12px;
+  }
+
+  .btn-logout {
+    padding: 0.6rem 1rem;
+    font-size: 12px;
+  }
+
+  .ganancia-section {
+    padding: 1.5rem 1rem;
+    margin: 1rem;
+  }
+
+  .ganancia-section h2 {
+    font-size: 18px;
+    margin-bottom: 1rem;
+  }
+
+  .ganancia-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .ganancia-card {
+    padding: 1.2rem;
+  }
+
+  .ganancia-label {
+    font-size: 11px;
+  }
+
+  .ganancia-value {
+    font-size: 24px;
+  }
+
+  .ganancia-subtitle {
+    font-size: 11px;
+  }
+
+  .stats {
+    padding: 1.5rem 1rem;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.2rem;
+  }
+
+  .stat-number {
+    font-size: 28px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
   .controls {
     flex-direction: column;
     align-items: stretch;
+    padding: 1rem;
+    gap: 0.8rem;
   }
 
   .search-bar {
     min-width: auto;
   }
 
+  .search-input {
+    padding: 0.75rem 1rem;
+    font-size: 16px;
+  }
+
   .filters {
     justify-content: stretch;
     width: 100%;
+    gap: 0.3rem;
   }
 
   .filter-btn {
     flex: 1;
+    padding: 0.5rem 0.8rem;
+    font-size: 12px;
   }
 
   .btn-primary {
     width: 100%;
+    padding: 0.75rem 1.5rem;
+    font-size: 14px;
+  }
+
+  .form-alumno {
+    padding: 1.5rem 1rem;
+    margin: 1rem;
+  }
+
+  .form-section h3 {
+    font-size: 13px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .form-alumno input,
+  .form-alumno select,
+  .form-alumno textarea {
+    padding: 0.75rem 1rem;
+    font-size: 16px;
+  }
+
+  .form-textarea {
+    min-height: 80px;
+  }
+
+  .form-buttons {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .form-buttons button {
+    width: 100%;
+  }
+
+  .alumnos-list {
+    padding: 1rem;
   }
 
   .table-wrapper {
+    font-size: 13px;
+    border-radius: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .alumnos-table {
+    min-width: 900px;
+  }
+
+  .alumnos-table th,
+  .alumnos-table td {
+    padding: 0.7rem 0.6rem;
+  }
+
+  .nombre-cell {
+    min-width: 120px;
+  }
+
+  .email-cell {
+    min-width: 140px;
+  }
+
+  .fecha-cell {
+    min-width: 90px;
+  }
+
+  .acciones-cell {
+    flex-direction: row;
+    gap: 0.3rem;
+    min-width: auto;
+  }
+
+  .btn-action {
+    padding: 0.35rem 0.6rem;
+    font-size: 11px;
+  }
+
+  .btn-nota {
+    padding: 0.35rem 0.6rem;
+    font-size: 11px;
+  }
+
+  .modal {
+    padding: 1.5rem;
+    width: 95%;
+    max-width: 95%;
+  }
+
+  .modal h2 {
+    font-size: 18px;
+  }
+
+  .modal-content p {
+    font-size: 13px;
+  }
+
+  .modal-nota-content {
+    font-size: 13px;
+    padding: 1rem;
+    max-height: 50vh;
+  }
+
+  .empty {
+    padding: 2rem 1rem;
+    font-size: 14px;
+  }
+
+  .badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel-header {
+    padding: 0.8rem;
+  }
+
+  .logo-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .header-text h1 {
+    font-size: 18px;
+  }
+
+  .header-text p {
+    font-size: 10px;
+  }
+
+  .header-right {
+    flex-direction: column;
+  }
+
+  .btn-ganancia,
+  .btn-logout {
+    padding: 0.5rem 0.8rem;
+    font-size: 11px;
+  }
+
+  .ganancia-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ganancia-card {
+    padding: 1rem;
+  }
+
+  .ganancia-label {
+    font-size: 10px;
+  }
+
+  .ganancia-value {
+    font-size: 20px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 0.8rem;
+  }
+
+  .controls {
+    padding: 0.8rem;
+    gap: 0.6rem;
+  }
+
+  .filter-btn {
+    padding: 0.5rem 0.6rem;
+    font-size: 11px;
+  }
+
+  .form-alumno {
+    padding: 1rem;
+    margin: 0.8rem;
+  }
+
+  .alumnos-table {
     font-size: 12px;
   }
 
   .alumnos-table th,
   .alumnos-table td {
-    padding: 0.6rem 0.8rem;
+    padding: 0.5rem 0.4rem;
+  }
+
+  .btn-action {
+    padding: 0.3rem 0.5rem;
+    font-size: 10px;
+  }
+
+  .modal {
+    padding: 1.2rem;
   }
 
   .acciones-cell {
     flex-direction: column;
-    min-width: auto;
+  }
+
+  .btn-delete {
+    width: 100%;
+  }
+
+  .btn-editar {
+    width: 100%;
   }
 }
