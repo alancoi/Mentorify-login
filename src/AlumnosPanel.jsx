@@ -181,6 +181,41 @@ export default function AlumnosPanel() {
     }
   }
 
+  async function handleConfirmImport() {
+    if (!importData.length) {
+      alert('No hay datos para importar');
+      return;
+    }
+
+    try {
+      const alumnosToInsert = importData.map(row => ({
+        coach_id: coachId,
+        nombre: row.nombre || '',
+        email: row.email || '',
+        plan_tipo: row.plan_tipo || 'Básico',
+        plan_precio: parseFloat(row.plan_precio) || 0,
+        fecha_inicio: row.fecha_inicio || null,
+        fecha_renovacion: row.fecha_renovacion || null,
+        estado: row.estado || 'Activo',
+        notas: row.notas || ''
+      }));
+
+      const { error: err } = await supabase
+        .from('alumnos')
+        .insert(alumnosToInsert);
+
+      if (err) throw err;
+
+      setSuccessMsg(`✅ ${importData.length} alumnos importados exitosamente`);
+      setImportData([]);
+      setShowImport(false);
+      setTimeout(() => setSuccessMsg(''), 3000);
+      loadAlumnos(coachId);
+    } catch (err) {
+      alert('Error al importar: ' + err.message);
+    }
+  }
+
   async function handleExportToExcel() {
     try {
       const dataToExport = alumnos.map(alumno => ({
