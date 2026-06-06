@@ -14,7 +14,9 @@ export default function AlumnosPanel() {
   const [showForm, setShowForm] = useState(false);
   const [showGanancia, setShowGanancia] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [coachId, setCoachId] = useState(null);
+  const [importData, setImportData] = useState([]);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -112,7 +114,70 @@ export default function AlumnosPanel() {
         setSuccessMsg('');
       }, 2000);
     } catch (err) {
-      setErrorReport('Error: ' + err.message);
+      setSuccessMsg('❌ Error: ' + err.message);
+    }
+  }
+
+  async function handleImportFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      
+      const data = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        const row = {};
+        headers.forEach((header, idx) => {
+          row[header] = values[idx] || '';
+        });
+        if (row.nombre) data.push(row);
+      }
+
+      setImportData(data);
+      if (data.length === 0) {
+        alert('No se encontraron alumnos en el archivo');
+      }
+    } catch (err) {
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  }
+
+  async function handleConfirmImport() {
+    if (!importData.length) {
+      alert('No hay datos para importar');
+      return;
+    }
+
+    try {
+      const alumnosToInsert = importData.map(row => ({
+        coach_id: coachId,
+        nombre: row.nombre || '',
+        email: row.email || '',
+        plan_tipo: row.plan_tipo || 'Básico',
+        plan_precio: parseFloat(row.plan_precio) || 0,
+        fecha_inicio: row.fecha_inicio || null,
+        fecha_renovacion: row.fecha_renovacion || null,
+        estado: row.estado || 'Activo',
+        notas: row.notas || ''
+      }));
+
+      const { error: err } = await supabase
+        .from('alumnos')
+        .insert(alumnosToInsert);
+
+      if (err) throw err;
+
+      setSuccessMsg(`✅ ${importData.length} alumnos importados exitosamente`);
+      setImportData([]);
+      setShowImport(false);
+      setTimeout(() => setSuccessMsg(''), 3000);
+      loadAlumnos(coachId);
+    } catch (err) {
+      alert('Error al importar: ' + err.message);
     }
   }
 
@@ -514,7 +579,86 @@ export default function AlumnosPanel() {
         }} className="btn-primary">
           + Nuevo alumno
         </button>
+        <button onClick={() => setShowImport(!showImport)} className="btn-secondary" style={{ marginLeft: '0.5rem' }}>
+          📥 Importar Excel
+        </button>
       </section>
+
+      {showImport && (
+        <section className="import-section">
+          <div className="import-content">
+            <h2>📥 Importar Alumnos desde Excel/CSV</h2>
+            
+            {importData.length === 0 ? (
+              <div className="import-form">
+                <p style={{ marginBottom: '1rem', color: '#666' }}>
+                  Carga un archivo CSV o Excel con los siguientes campos:
+                </p>
+                <div className="import-example">
+                  <strong>Columnas esperadas:</strong><br/>
+                  nombre, email, plan_tipo, plan_precio, fecha_inicio, fecha_renovacion, estado, notas
+                </div>
+                <label className="import-label">
+                  <input 
+                    type="file" 
+                    accept=".csv,.xlsx,.xls"
+                    onChange={handleImportFile}
+                    style={{ display: 'none' }}
+                  />
+                  <span className="btn-primary" style={{ display: 'block', textAlign: 'center', cursor: 'pointer' }}>
+                    Seleccionar archivo
+                  </span>
+                </label>
+              </div>
+            ) : (
+              <div className="import-preview">
+                <h3>Vista previa ({importData.length} alumnos)</h3>
+                <div className="import-table-wrapper">
+                  <table className="import-table">
+                    <thead>
+                      <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th>Precio</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importData.slice(0, 5).map((row, idx) => (
+                        <tr key={idx}>
+                          <td>{row.nombre}</td>
+                          <td>{row.email}</td>
+                          <td>{row.plan_tipo}</td>
+                          <td>${row.plan_precio}</td>
+                        </tr>
+                      ))}
+                      {importData.length > 5 && (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: 'center', color: '#999', fontSize: '12px' }}>
+                            ... y {importData.length - 5} más
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                  <button onClick={handleConfirmImport} className="btn-primary" style={{ flex: 1 }}>
+                    ✅ Importar {importData.length} alumnos
+                  </button>
+                  <button onClick={() => { setImportData([]); }} className="btn-secondary" style={{ flex: 1 }}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            <button onClick={() => setShowImport(false)} className="btn-secondary" style={{ marginTop: '1rem', width: '100%' }}>
+              Cerrar
+            </button>
+          </div>
+        </section>
+      )}
 
       {showForm && (
         <form onSubmit={handleAddAlumno} className="form-alumno">

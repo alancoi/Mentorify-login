@@ -106,6 +106,85 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
+.import-section {
+  background: white;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 1.5rem auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.import-content h2 {
+  margin-top: 0;
+  color: #091A48;
+  font-size: 20px;
+  margin-bottom: 1.5rem;
+}
+
+.import-form {
+  padding: 2rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 2px dashed #e0e0e0;
+}
+
+.import-example {
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  margin: 1rem 0;
+  font-family: monospace;
+  font-size: 12px;
+  color: #666;
+  border-left: 3px solid #6C4DFF;
+}
+
+.import-label {
+  cursor: pointer;
+}
+
+.import-preview {
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.import-preview h3 {
+  margin-top: 0;
+  color: #091A48;
+  font-size: 16px;
+  margin-bottom: 1rem;
+}
+
+.import-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.import-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.import-table th {
+  background: #f0f0f0;
+  padding: 0.8rem;
+  text-align: left;
+  font-weight: 600;
+  color: #091A48;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.import-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #666;
+}
+
 .settings-content h2 {
   margin-top: 0;
   color: #091A48;
