@@ -123,18 +123,40 @@ export default function AlumnosPanel() {
     if (!file) return;
 
     try {
-      const text = await file.text();
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-      
-      const data = [];
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
-        const row = {};
-        headers.forEach((header, idx) => {
-          row[header] = values[idx] || '';
-        });
-        if (row.nombre) data.push(row);
+      let data = [];
+
+      if (file.name.endsWith('.csv')) {
+        // Procesar CSV
+        const text = await file.text();
+        const lines = text.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim());
+          const row = {};
+          headers.forEach((header, idx) => {
+            row[header] = values[idx] || '';
+          });
+          if (row.nombre) data.push(row);
+        }
+      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        // Procesar XLSX
+        const { default: XLSX } = await import('xlsx');
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(worksheet);
+        
+        data = rows.map(row => {
+          const normalized = {};
+          Object.keys(row).forEach(key => {
+            normalized[key.toLowerCase().replace(/\s+/g, '_')] = row[key] || '';
+          });
+          return normalized;
+        }).filter(row => row.nombre || row.name);
+      } else {
+        alert('Por favor usa un archivo CSV o XLSX');
+        return;
       }
 
       setImportData(data);
@@ -142,6 +164,7 @@ export default function AlumnosPanel() {
         alert('No se encontraron alumnos en el archivo');
       }
     } catch (err) {
+      console.error('Error:', err);
       alert('Error al leer el archivo: ' + err.message);
     }
   }
