@@ -276,16 +276,19 @@ export default function AlumnosPanel() {
     <div className="panel-container">
       <header className="panel-header">
         <div className="header-left">
-          <svg className="logo-icon" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+          <svg className="logo-icon" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style={{stopColor: '#6C4DFF', stopOpacity: 1}} />
                 <stop offset="100%" style={{stopColor: '#482DDB', stopOpacity: 1}} />
               </linearGradient>
             </defs>
-            {/* Infinito - verdadero */}
-            <path d="M 30 40 C 15 40, 10 30, 10 25 C 10 15, 18 10, 28 10 C 38 10, 42 18, 45 25 C 48 18, 52 10, 62 10 C 72 10, 80 15, 80 25 C 80 30, 75 40, 60 40 C 75 40, 80 50, 80 55 C 80 65, 72 70, 62 70 C 52 70, 48 62, 45 55 C 42 62, 38 70, 28 70 C 18 70, 10 65, 10 55 C 10 50, 15 40, 30 40" 
-              fill="none" stroke="url(#logoGradient)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+            {/* Infinito - lazo izquierdo */}
+            <path d="M 40 60 C 40 40, 50 30, 65 30 C 80 30, 85 40, 85 55 C 85 70, 80 80, 65 80 C 50 80, 40 70, 40 60" 
+              fill="none" stroke="url(#logoGradient)" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round"/>
+            {/* Infinito - lazo derecho */}
+            <path d="M 115 60 C 115 40, 120 30, 135 30 C 150 30, 160 40, 160 55 C 160 70, 150 80, 135 80 C 120 80, 115 70, 115 60" 
+              fill="none" stroke="url(#logoGradient)" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <div className="header-text">
             <h1>Mentorify</h1>
