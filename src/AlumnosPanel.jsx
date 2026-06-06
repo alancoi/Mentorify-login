@@ -316,11 +316,6 @@ export default function AlumnosPanel() {
               <div className="ganancia-value">{ganancia.clientesNuevos}</div>
               <div className="ganancia-subtitle">clientes nuevos</div>
             </div>
-            <div className="ganancia-card highlight">
-              <div className="ganancia-label">Proyección Este Mes</div>
-              <div className="ganancia-value">${ganancia.proyeccion}</div>
-              <div className="ganancia-subtitle">estimado final</div>
-            </div>
             <div className="ganancia-card">
               <div className="ganancia-label">Clientes Activos (total)</div>
               <div className="ganancia-value">{ganancia.alumnosActivos}</div>
@@ -330,11 +325,6 @@ export default function AlumnosPanel() {
               <div className="ganancia-label">Por Vencer (7 días)</div>
               <div className="ganancia-value">{ganancia.proximosVencer}</div>
               <div className="ganancia-subtitle">a renovar</div>
-            </div>
-            <div className="ganancia-card highlight">
-              <div className="ganancia-label">Ingresos Recurrentes</div>
-              <div className="ganancia-value">${ganancia.ingresoActual.toFixed(2)}</div>
-              <div className="ganancia-subtitle">clientes activos</div>
             </div>
           </div>
         </section>
