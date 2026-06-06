@@ -30,7 +30,6 @@ export default function AlumnosPanel() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user');
 
-      // Get or create coach
       let { data: coach, error: getError } = await supabase
         .from('coaches')
         .select('id')
@@ -120,6 +119,17 @@ export default function AlumnosPanel() {
     }
   }
 
+  async function handleDeleteAlumno(id) {
+    if (!confirm('¿Eliminar este alumno?')) return;
+    try {
+      const { error: err } = await supabase.from('alumnos').delete().eq('id', id);
+      if (err) throw err;
+      loadAlumnos(coachId);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
   async function handleLogout() {
     await supabase.auth.signOut();
   }
@@ -132,13 +142,11 @@ export default function AlumnosPanel() {
     return diff > 0 ? diff : 0;
   };
 
-  const getEstadoPago = (diasRestantes) => {
-    if (diasRestantes === null) return 'Sin plan';
-    if (diasRestantes === 0) return '⚠️ Vence hoy';
-    if (diasRestantes === 1) return '🔴 1 día';
-    if (diasRestantes === 2) return '🟠 2 días';
-    if (diasRestantes === 3) return '🟡 3 días';
-    return '✅ Al día';
+  const getEstadoBadge = (diasRestantes) => {
+    if (diasRestantes === null) return { texto: 'Sin plan', clase: 'sin-plan' };
+    if (diasRestantes === 0) return { texto: 'Vence hoy', clase: 'vence-hoy' };
+    if (diasRestantes <= 3) return { texto: `${diasRestantes}d`, clase: 'proximo-vencer' };
+    return { texto: 'Al día', clase: 'al-dia' };
   };
 
   const stats = {
@@ -179,7 +187,7 @@ export default function AlumnosPanel() {
       <section className="stats">
         <div className="stat-card">
           <div className="stat-number">{stats.total}</div>
-          <div className="stat-label">Total de alumnos</div>
+          <div className="stat-label">Total</div>
         </div>
         <div className="stat-card">
           <div className="stat-number">{stats.activos}</div>
@@ -187,7 +195,7 @@ export default function AlumnosPanel() {
         </div>
         <div className="stat-card alert">
           <div className="stat-number">{stats.vencerse}</div>
-          <div className="stat-label">Por vencer en 3 días</div>
+          <div className="stat-label">Por vencer</div>
         </div>
       </section>
 
@@ -269,48 +277,54 @@ export default function AlumnosPanel() {
         {filteredAlumnos.length === 0 ? (
           <p className="empty">No hay alumnos. ¡Agrega tu primer alumno!</p>
         ) : (
-          <div className="alumnos-grid">
-            {filteredAlumnos.map(alumno => {
-              const diasRestantes = calcularDiasRestantes(alumno.fecha_renovacion);
-              return (
-                <div key={alumno.id} className="alumno-card">
-                  <div className="card-header">
-                    <h3>{alumno.nombre}</h3>
-                    <span className={`badge badge-${alumno.estado.toLowerCase()}`}>{alumno.estado}</span>
-                  </div>
-                  
-                  {alumno.email && <p className="card-email">📧 {alumno.email}</p>}
-                  
-                  {alumno.plan_tipo && (
-                    <div className="card-section">
-                      <div className="section-title">Plan</div>
-                      <p>{alumno.plan_tipo} ${alumno.plan_precio}</p>
-                    </div>
-                  )}
-
-                  {alumno.fecha_renovacion && (
-                    <div className="card-section">
-                      <div className="section-title">Estado</div>
-                      <div className="dias-badge">{getEstadoPago(diasRestantes)}</div>
-                      {diasRestantes !== null && <p className="dias-texto">{diasRestantes} días restantes</p>}
-                    </div>
-                  )}
-
-                  {alumno.fecha_inicio && (
-                    <div className="card-section">
-                      <div className="section-title">Fechas</div>
-                      <p>Inicio: {new Date(alumno.fecha_inicio).toLocaleDateString('es-AR')}</p>
-                      {alumno.fecha_renovacion && <p>Renovación: {new Date(alumno.fecha_renovacion).toLocaleDateString('es-AR')}</p>}
-                    </div>
-                  )}
-
-                  <div className="card-actions">
-                    <button onClick={() => setSelectedAlumno(alumno)} className="btn-small">Ver detalle</button>
-                    <button className="btn-small btn-mail">📧 Mail</button>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="table-wrapper">
+            <table className="alumnos-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Plan</th>
+                  <th>Precio</th>
+                  <th>Inicio</th>
+                  <th>Renovación</th>
+                  <th>Días</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAlumnos.map(alumno => {
+                  const diasRestantes = calcularDiasRestantes(alumno.fecha_renovacion);
+                  const estadoBadge = getEstadoBadge(diasRestantes);
+                  return (
+                    <tr key={alumno.id} className={`row-${alumno.estado.toLowerCase()}`}>
+                      <td className="nombre-cell">
+                        <strong>{alumno.nombre}</strong>
+                      </td>
+                      <td className="email-cell">{alumno.email || '-'}</td>
+                      <td>{alumno.plan_tipo}</td>
+                      <td className="precio-cell">${alumno.plan_precio}</td>
+                      <td className="fecha-cell">
+                        {alumno.fecha_inicio ? new Date(alumno.fecha_inicio).toLocaleDateString('es-AR') : '-'}
+                      </td>
+                      <td className="fecha-cell">
+                        {alumno.fecha_renovacion ? new Date(alumno.fecha_renovacion).toLocaleDateString('es-AR') : '-'}
+                      </td>
+                      <td className={`dias-cell ${diasRestantes !== null && diasRestantes <= 3 ? 'urgente' : ''}`}>
+                        {diasRestantes !== null ? diasRestantes : '-'}
+                      </td>
+                      <td>
+                        <span className={`badge badge-${estadoBadge.clase}`}>{estadoBadge.texto}</span>
+                      </td>
+                      <td className="acciones-cell">
+                        <button onClick={() => setSelectedAlumno(alumno)} className="btn-action btn-ver">Ver</button>
+                        <button onClick={() => handleDeleteAlumno(alumno.id)} className="btn-action btn-delete">✕</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </section>
