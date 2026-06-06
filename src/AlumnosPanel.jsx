@@ -204,33 +204,44 @@ export default function AlumnosPanel() {
   // Calcular ganancia mensual
   const calcularGanancia = () => {
     const hoy = new Date();
+    const diaActual = hoy.getDate();
     const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
     
     const inicioMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-    const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+    const finDiaEquivalenteMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, diaActual);
 
+    // Clientes nuevos este mes
     const clientesNuevos = alumnos.filter(a => {
       const fechaInicio = new Date(a.fecha_inicio);
       return fechaInicio >= inicioMes && fechaInicio <= finMes;
     });
 
-    const clientesNuevosMesPasado = alumnos.filter(a => {
-      const fechaInicio = new Date(a.fecha_inicio);
-      return fechaInicio >= inicioMesPasado && fechaInicio <= finMesPasado;
-    });
+    // Ingresos este mes (hasta hoy)
+    const totalIngresoEsteMes = alumnos
+      .filter(a => {
+        const fechaInicio = new Date(a.fecha_inicio);
+        return fechaInicio >= inicioMes && fechaInicio <= hoy;
+      })
+      .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    const totalIngresoEsteMes = clientesNuevos.reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
-    const totalIngresoMesPasado = clientesNuevosMesPasado.reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
+    // Ingresos mes pasado (mismo día del mes actual)
+    const totalIngresoMesPasado = alumnos
+      .filter(a => {
+        const fechaInicio = new Date(a.fecha_inicio);
+        return fechaInicio >= inicioMesPasado && fechaInicio <= finDiaEquivalenteMesPasado;
+      })
+      .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
     
     const alumnosActivos = alumnos.filter(a => a.estado === 'Activo').length;
     const ingresoActual = alumnos
       .filter(a => a.estado === 'Activo')
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
+    // Comparación de ingresos
     const porcentajeComparacion = totalIngresoMesPasado > 0 
       ? ((totalIngresoEsteMes - totalIngresoMesPasado) / totalIngresoMesPasado * 100).toFixed(1)
-      : 0;
+      : (totalIngresoEsteMes > 0 ? 100 : 0);
 
     const diasTranscurridos = hoy.getDate();
     const diasEnMes = finMes.getDate();
