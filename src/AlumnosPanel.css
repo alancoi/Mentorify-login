@@ -158,6 +158,14 @@
   margin-bottom: 0.5rem;
 }
 
+.ganancia-value.positivo {
+  color: #10b981;
+}
+
+.ganancia-value.negativo {
+  color: #ff6b6b;
+}
+
 .ganancia-card.primary .ganancia-value,
 .ganancia-card.highlight .ganancia-value,
 .ganancia-card.alert .ganancia-value {
@@ -488,9 +496,23 @@
   font-size: 12px;
   min-width: 120px;
   max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.btn-nota {
+  padding: 0.4rem 0.8rem;
+  background: #6C4DFF;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-nota:hover {
+  background: #482DDB;
+  transform: scale(1.05);
 }
 
 .badge {
@@ -617,6 +639,20 @@
 
 .modal-content strong {
   color: #091A48;
+}
+
+.modal-nota-content {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid #6C4DFF;
+  color: #333;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 @media (max-width: 768px) {

@@ -9,6 +9,7 @@ export default function AlumnosPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedAlumno, setSelectedAlumno] = useState(null);
+  const [selectedNota, setSelectedNota] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showGanancia, setShowGanancia] = useState(false);
   const [coachId, setCoachId] = useState(null);
@@ -162,33 +163,58 @@ export default function AlumnosPanel() {
     }).length,
   };
 
-  // Calcular ganancia mensual
+  // Calcular ganancia mensual MEJORADA
   const calcularGanancia = () => {
     const hoy = new Date();
     const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+    
+    // Mes pasado
+    const inicioMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+    const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
 
+    // Clientes nuevos este mes
     const clientesNuevos = alumnos.filter(a => {
       const fechaInicio = new Date(a.fecha_inicio);
       return fechaInicio >= inicioMes && fechaInicio <= finMes;
     });
 
-    const totalIngreso = clientesNuevos.reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
+    // Clientes nuevos mes pasado
+    const clientesNuevosMesPasado = alumnos.filter(a => {
+      const fechaInicio = new Date(a.fecha_inicio);
+      return fechaInicio >= inicioMesPasado && fechaInicio <= finMesPasado;
+    });
+
+    const totalIngresoEsteMes = clientesNuevos.reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
+    const totalIngresoMesPasado = clientesNuevosMesPasado.reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
     
     const alumnosActivos = alumnos.filter(a => a.estado === 'Activo').length;
     const ingresoActual = alumnos
       .filter(a => a.estado === 'Activo')
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
+    // Comparación
+    const porcentajeComparacion = totalIngresoMesPasado > 0 
+      ? ((totalIngresoEsteMes - totalIngresoMesPasado) / totalIngresoMesPasado * 100).toFixed(1)
+      : 0;
+
+    // Proyección (basada en días del mes)
+    const diasTranscurridos = hoy.getDate();
+    const diasEnMes = finMes.getDate();
+    const proyeccion = (totalIngresoEsteMes / diasTranscurridos * diasEnMes).toFixed(2);
+
     return {
       clientesNuevos: clientesNuevos.length,
-      totalIngreso: totalIngreso,
+      totalIngreso: totalIngresoEsteMes,
+      ingresoMesPasado: totalIngresoMesPasado,
       alumnosActivos: alumnosActivos,
       ingresoActual: ingresoActual,
       proximosVencer: alumnos.filter(a => {
         const dr = calcularDiasRestantes(a.fecha_renovacion);
         return dr !== null && dr <= 7 && dr > 0;
-      }).length
+      }).length,
+      porcentajeComparacion: porcentajeComparacion,
+      proyeccion: proyeccion
     };
   };
 
@@ -206,9 +232,18 @@ export default function AlumnosPanel() {
     <div className="panel-container">
       <header className="panel-header">
         <div className="header-left">
-          <svg className="logo-icon" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 5 A15 15 0 0 0 20 35 A15 15 0 0 0 20 5" fill="none" stroke="#6C4DFF" strokeWidth="3"/>
-            <path d="M20 35 A15 15 0 0 0 20 5" fill="none" stroke="#482DDB" strokeWidth="3"/>
+          <svg className="logo-icon" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{stopColor: '#6C4DFF', stopOpacity: 1}} />
+                <stop offset="100%" style={{stopColor: '#482DDB', stopOpacity: 1}} />
+              </linearGradient>
+            </defs>
+            {/* Infinito */}
+            <path d="M 40 60 C 40 50, 45 40, 55 40 C 70 40, 80 50, 80 65 C 80 80, 70 90, 55 90 C 45 90, 40 80, 40 70" 
+              fill="none" stroke="url(#logoGradient)" strokeWidth="8" strokeLinecap="round"/>
+            <path d="M 80 60 C 80 50, 85 40, 95 40 C 110 40, 115 50, 115 65 C 115 80, 110 90, 95 90 C 85 90, 80 80, 80 70" 
+              fill="none" stroke="url(#logoGradient)" strokeWidth="8" strokeLinecap="round"/>
           </svg>
           <div className="header-text">
             <h1>Mentorify</h1>
@@ -228,29 +263,46 @@ export default function AlumnosPanel() {
           <h2>Reporte de Ganancia Mensual</h2>
           <div className="ganancia-grid">
             <div className="ganancia-card">
-              <div className="ganancia-label">Clientes Nuevos (este mes)</div>
-              <div className="ganancia-value">{ganancia.clientesNuevos}</div>
-              <div className="ganancia-subtitle">personas</div>
+              <div className="ganancia-label">Facturación Mes Pasado</div>
+              <div className="ganancia-value">${ganancia.ingresoMesPasado.toFixed(2)}</div>
+              <div className="ganancia-subtitle">ingresos</div>
             </div>
             <div className="ganancia-card primary">
-              <div className="ganancia-label">Ingresos Este Mes</div>
+              <div className="ganancia-label">Facturación Este Mes</div>
               <div className="ganancia-value">${ganancia.totalIngreso.toFixed(2)}</div>
-              <div className="ganancia-subtitle">nuevos ingresos</div>
+              <div className="ganancia-subtitle">hasta hoy</div>
             </div>
             <div className="ganancia-card">
-              <div className="ganancia-label">Clientes Activos</div>
-              <div className="ganancia-value">{ganancia.alumnosActivos}</div>
-              <div className="ganancia-subtitle">activos ahora</div>
+              <div className="ganancia-label">Comparación con Mes Pasado</div>
+              <div className={`ganancia-value ${ganancia.porcentajeComparacion >= 0 ? 'positivo' : 'negativo'}`}>
+                {ganancia.porcentajeComparacion >= 0 ? '+' : ''}{ganancia.porcentajeComparacion}%
+              </div>
+              <div className="ganancia-subtitle">diferencia</div>
+            </div>
+            <div className="ganancia-card">
+              <div className="ganancia-label">Activos Nuevos Este Mes</div>
+              <div className="ganancia-value">{ganancia.clientesNuevos}</div>
+              <div className="ganancia-subtitle">clientes nuevos</div>
             </div>
             <div className="ganancia-card highlight">
-              <div className="ganancia-label">Ingresos Totales</div>
-              <div className="ganancia-value">${ganancia.ingresoActual.toFixed(2)}</div>
-              <div className="ganancia-subtitle">clientes activos</div>
+              <div className="ganancia-label">Proyección Este Mes</div>
+              <div className="ganancia-value">${ganancia.proyeccion}</div>
+              <div className="ganancia-subtitle">estimado final</div>
+            </div>
+            <div className="ganancia-card">
+              <div className="ganancia-label">Clientes Activos (total)</div>
+              <div className="ganancia-value">{ganancia.alumnosActivos}</div>
+              <div className="ganancia-subtitle">activos ahora</div>
             </div>
             <div className="ganancia-card alert">
               <div className="ganancia-label">Por Vencer (7 días)</div>
               <div className="ganancia-value">{ganancia.proximosVencer}</div>
               <div className="ganancia-subtitle">a renovar</div>
+            </div>
+            <div className="ganancia-card highlight">
+              <div className="ganancia-label">Ingresos Recurrentes</div>
+              <div className="ganancia-value">${ganancia.ingresoActual.toFixed(2)}</div>
+              <div className="ganancia-subtitle">clientes activos</div>
             </div>
           </div>
         </section>
@@ -420,8 +472,14 @@ export default function AlumnosPanel() {
                       <td>
                         <span className={`badge badge-${estadoBadge.clase}`}>{estadoBadge.texto}</span>
                       </td>
-                      <td className="notas-cell" title={alumno.notas}>
-                        {alumno.notas ? alumno.notas.substring(0, 20) + '...' : '-'}
+                      <td className="notas-cell">
+                        {alumno.notas ? (
+                          <button onClick={() => setSelectedNota(alumno)} className="btn-nota">
+                            📝 Ver
+                          </button>
+                        ) : (
+                          <span>-</span>
+                        )}
                       </td>
                       <td className="acciones-cell">
                         <button onClick={() => setSelectedAlumno(alumno)} className="btn-action btn-ver">Ver</button>
@@ -449,6 +507,18 @@ export default function AlumnosPanel() {
               {selectedAlumno.notas && <p><strong>Notas:</strong> {selectedAlumno.notas}</p>}
             </div>
             <button onClick={() => setSelectedAlumno(null)} className="btn-secondary">Cerrar</button>
+          </div>
+        </div>
+      )}
+
+      {selectedNota && (
+        <div className="modal-overlay" onClick={() => setSelectedNota(null)}>
+          <div className="modal modal-nota" onClick={(e) => e.stopPropagation()}>
+            <h2>Notas de {selectedNota.nombre}</h2>
+            <div className="modal-nota-content">
+              {selectedNota.notas}
+            </div>
+            <button onClick={() => setSelectedNota(null)} className="btn-secondary">Cerrar</button>
           </div>
         </div>
       )}
