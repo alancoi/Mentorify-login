@@ -448,9 +448,7 @@ export default function AlumnosPanel() {
                 appmentorify@gmail.com
               </p>
               <a 
-                href="https://mail.google.com/mail/u/0/?to=appmentorify@gmail.com&subject=Reporte%20de%20Error%20o%20Mejora%20-%20Mentorify"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="mailto:appmentorify@gmail.com?subject=Reporte%20de%20Error%20o%20Mejora%20-%20Mentorify&body=Hola,%0A%0AQuiero%20reportar%20un%20error%20o%20sugerir%20una%20mejora%20en%20Mentorify:%0A%0A"
                 className="btn-primary"
                 style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
               >
