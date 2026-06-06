@@ -47,6 +47,8 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .btn-compact {
@@ -755,8 +757,9 @@
   }
 
   .btn-compact {
-    padding: 0.4rem 0.8rem;
+    padding: 0.4rem 0.7rem;
     font-size: 11px;
+    flex: 0 1 auto;
   }
 
   .ganancia-section {
