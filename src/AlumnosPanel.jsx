@@ -334,14 +334,14 @@ export default function AlumnosPanel() {
           </div>
         </div>
         <div className="header-right">
-          <button onClick={() => setShowGanancia(!showGanancia)} className="btn-icon" title="Ganancia mensual">
-            💰
+          <button onClick={() => setShowGanancia(!showGanancia)} className="btn-compact" title="Ganancia mensual">
+            Ganancia
           </button>
-          <button onClick={() => setShowSettings(!showSettings)} className="btn-icon" title="Configuración">
-            ⚙️
+          <button onClick={() => setShowSettings(!showSettings)} className="btn-compact" title="Configuración">
+            Configuración
           </button>
-          <button onClick={handleLogout} className="btn-icon" title="Salir">
-            🚪
+          <button onClick={handleLogout} className="btn-compact" title="Salir">
+            Salir
           </button>
         </div>
       </header>

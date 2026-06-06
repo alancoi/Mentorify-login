@@ -45,26 +45,29 @@
 
 .header-right {
   display: flex;
-  gap: 0.3rem;
-}
-
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: #f5f5f5;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 18px;
-  transition: all 0.3s;
-  display: flex;
+  gap: 0.5rem;
   align-items: center;
-  justify-content: center;
 }
 
-.btn-icon:hover {
-  background: #e8e8e8;
-  transform: scale(1.05);
+.btn-compact {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6C4DFF;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.btn-compact:hover {
+  background: #6C4DFF;
+  color: white;
+  border-color: #6C4DFF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(108, 77, 255, 0.3);
 }
 
 .ganancia-section {
@@ -751,10 +754,9 @@
     gap: 0.3rem;
   }
 
-  .btn-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
+  .btn-compact {
+    padding: 0.4rem 0.8rem;
+    font-size: 11px;
   }
 
   .ganancia-section {
