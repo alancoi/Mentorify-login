@@ -563,6 +563,12 @@
   color: #666;
 }
 
+.btn-editar:hover {
+  background: #6C4DFF;
+  color: white;
+  border-color: #6C4DFF;
+}
+
 .btn-ver:hover {
   background: #6C4DFF;
   color: white;

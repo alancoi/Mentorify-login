@@ -10,6 +10,7 @@ export default function AlumnosPanel() {
   const [error, setError] = useState(null);
   const [selectedAlumno, setSelectedAlumno] = useState(null);
   const [selectedNota, setSelectedNota] = useState(null);
+  const [editingAlumno, setEditingAlumno] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showGanancia, setShowGanancia] = useState(false);
   const [coachId, setCoachId] = useState(null);
@@ -93,19 +94,39 @@ export default function AlumnosPanel() {
     try {
       if (!coachId) throw new Error('Coach not initialized');
       
-      const { error: err } = await supabase.from('alumnos').insert([{
-        nombre: formData.nombre,
-        email: formData.email,
-        fecha_inicio: formData.fecha_inicio || null,
-        fecha_renovacion: formData.fecha_renovacion || null,
-        plan_tipo: formData.plan_tipo,
-        plan_precio: parseFloat(formData.plan_precio) || 0,
-        estado: formData.estado,
-        notas: formData.notas || '',
-        coach_id: coachId
-      }]);
-      
-      if (err) throw err;
+      if (editingAlumno) {
+        // Actualizar alumno existente
+        const { error: err } = await supabase
+          .from('alumnos')
+          .update({
+            nombre: formData.nombre,
+            email: formData.email,
+            fecha_inicio: formData.fecha_inicio || null,
+            fecha_renovacion: formData.fecha_renovacion || null,
+            plan_tipo: formData.plan_tipo,
+            plan_precio: parseFloat(formData.plan_precio) || 0,
+            estado: formData.estado,
+            notas: formData.notas || ''
+          })
+          .eq('id', editingAlumno.id);
+        
+        if (err) throw err;
+      } else {
+        // Crear nuevo alumno
+        const { error: err } = await supabase.from('alumnos').insert([{
+          nombre: formData.nombre,
+          email: formData.email,
+          fecha_inicio: formData.fecha_inicio || null,
+          fecha_renovacion: formData.fecha_renovacion || null,
+          plan_tipo: formData.plan_tipo,
+          plan_precio: parseFloat(formData.plan_precio) || 0,
+          estado: formData.estado,
+          notas: formData.notas || '',
+          coach_id: coachId
+        }]);
+        
+        if (err) throw err;
+      }
       
       setFormData({
         nombre: '',
@@ -117,11 +138,27 @@ export default function AlumnosPanel() {
         estado: 'Activo',
         notas: ''
       });
+      setEditingAlumno(null);
       setShowForm(false);
       loadAlumnos(coachId);
     } catch (err) {
       alert('Error: ' + err.message);
     }
+  }
+
+  function handleEditAlumno(alumno) {
+    setEditingAlumno(alumno);
+    setFormData({
+      nombre: alumno.nombre,
+      email: alumno.email || '',
+      fecha_inicio: alumno.fecha_inicio || '',
+      fecha_renovacion: alumno.fecha_renovacion || '',
+      plan_tipo: alumno.plan_tipo || 'Básico',
+      plan_precio: alumno.plan_precio || '',
+      estado: alumno.estado || 'Activo',
+      notas: alumno.notas || ''
+    });
+    setShowForm(true);
   }
 
   async function handleDeleteAlumno(id) {
@@ -163,23 +200,20 @@ export default function AlumnosPanel() {
     }).length,
   };
 
-  // Calcular ganancia mensual MEJORADA
+  // Calcular ganancia mensual
   const calcularGanancia = () => {
     const hoy = new Date();
     const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
     
-    // Mes pasado
     const inicioMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
     const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
 
-    // Clientes nuevos este mes
     const clientesNuevos = alumnos.filter(a => {
       const fechaInicio = new Date(a.fecha_inicio);
       return fechaInicio >= inicioMes && fechaInicio <= finMes;
     });
 
-    // Clientes nuevos mes pasado
     const clientesNuevosMesPasado = alumnos.filter(a => {
       const fechaInicio = new Date(a.fecha_inicio);
       return fechaInicio >= inicioMesPasado && fechaInicio <= finMesPasado;
@@ -193,12 +227,10 @@ export default function AlumnosPanel() {
       .filter(a => a.estado === 'Activo')
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    // Comparación
     const porcentajeComparacion = totalIngresoMesPasado > 0 
       ? ((totalIngresoEsteMes - totalIngresoMesPasado) / totalIngresoMesPasado * 100).toFixed(1)
       : 0;
 
-    // Proyección (basada en días del mes)
     const diasTranscurridos = hoy.getDate();
     const diasEnMes = finMes.getDate();
     const proyeccion = (totalIngresoEsteMes / diasTranscurridos * diasEnMes).toFixed(2);
@@ -239,7 +271,6 @@ export default function AlumnosPanel() {
                 <stop offset="100%" style={{stopColor: '#482DDB', stopOpacity: 1}} />
               </linearGradient>
             </defs>
-            {/* Infinito */}
             <path d="M 40 60 C 40 50, 45 40, 55 40 C 70 40, 80 50, 80 65 C 80 80, 70 90, 55 90 C 45 90, 40 80, 40 70" 
               fill="none" stroke="url(#logoGradient)" strokeWidth="8" strokeLinecap="round"/>
             <path d="M 80 60 C 80 50, 85 40, 95 40 C 110 40, 115 50, 115 65 C 115 80, 110 90, 95 90 C 85 90, 80 80, 80 70" 
@@ -344,7 +375,20 @@ export default function AlumnosPanel() {
             </button>
           ))}
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary">
+        <button onClick={() => {
+          setEditingAlumno(null);
+          setFormData({
+            nombre: '',
+            email: '',
+            fecha_inicio: '',
+            fecha_renovacion: '',
+            plan_tipo: 'Básico',
+            plan_precio: '',
+            estado: 'Activo',
+            notas: ''
+          });
+          setShowForm(!showForm);
+        }} className="btn-primary">
           + Nuevo alumno
         </button>
       </section>
@@ -352,7 +396,7 @@ export default function AlumnosPanel() {
       {showForm && (
         <form onSubmit={handleAddAlumno} className="form-alumno">
           <div className="form-section">
-            <h3>Información básica</h3>
+            <h3>{editingAlumno ? 'Editar alumno' : 'Información básica'}</h3>
             <div className="form-grid">
               <input 
                 type="text" 
@@ -421,8 +465,13 @@ export default function AlumnosPanel() {
           </div>
 
           <div className="form-buttons">
-            <button type="submit" className="btn-primary">Guardar alumno</button>
-            <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">Cancelar</button>
+            <button type="submit" className="btn-primary">
+              {editingAlumno ? 'Guardar cambios' : 'Guardar alumno'}
+            </button>
+            <button type="button" onClick={() => {
+              setShowForm(false);
+              setEditingAlumno(null);
+            }} className="btn-secondary">Cancelar</button>
           </div>
         </form>
       )}
@@ -482,7 +531,7 @@ export default function AlumnosPanel() {
                         )}
                       </td>
                       <td className="acciones-cell">
-                        <button onClick={() => setSelectedAlumno(alumno)} className="btn-action btn-ver">Ver</button>
+                        <button onClick={() => handleEditAlumno(alumno)} className="btn-action btn-editar">✏️ Editar</button>
                         <button onClick={() => handleDeleteAlumno(alumno.id)} className="btn-action btn-delete">✕</button>
                       </td>
                     </tr>
