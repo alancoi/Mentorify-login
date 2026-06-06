@@ -276,19 +276,16 @@ export default function AlumnosPanel() {
     <div className="panel-container">
       <header className="panel-header">
         <div className="header-left">
-          <svg className="logo-icon" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+          <svg className="logo-icon" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style={{stopColor: '#6C4DFF', stopOpacity: 1}} />
                 <stop offset="100%" style={{stopColor: '#482DDB', stopOpacity: 1}} />
               </linearGradient>
             </defs>
-            {/* Infinito - parte izquierda */}
-            <path d="M 15 30 C 15 18, 23 10, 32 10 C 41 10, 48 18, 48 30 C 48 42, 41 50, 32 50 C 23 50, 15 42, 15 30" 
-              fill="none" stroke="url(#logoGradient)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
-            {/* Infinito - parte derecha */}
-            <path d="M 48 30 C 48 18, 56 10, 65 10 C 74 10, 85 18, 85 30 C 85 42, 74 50, 65 50 C 56 50, 48 42, 48 30" 
-              fill="none" stroke="url(#logoGradient)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
+            {/* Infinito - verdadero */}
+            <path d="M 30 40 C 15 40, 10 30, 10 25 C 10 15, 18 10, 28 10 C 38 10, 42 18, 45 25 C 48 18, 52 10, 62 10 C 72 10, 80 15, 80 25 C 80 30, 75 40, 60 40 C 75 40, 80 50, 80 55 C 80 65, 72 70, 62 70 C 52 70, 48 62, 45 55 C 42 62, 38 70, 28 70 C 18 70, 10 65, 10 55 C 10 50, 15 40, 30 40" 
+              fill="none" stroke="url(#logoGradient)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <div className="header-text">
             <h1>Mentorify</h1>
