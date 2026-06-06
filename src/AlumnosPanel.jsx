@@ -181,11 +181,12 @@ export default function AlumnosPanel() {
     const hoy = new Date();
     const renovacion = new Date(fechaRenovacion);
     const diff = Math.ceil((renovacion - hoy) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? diff : 0;
+    return diff;
   };
 
   const getEstadoBadge = (diasRestantes) => {
     if (diasRestantes === null) return { texto: 'Sin plan', clase: 'sin-plan' };
+    if (diasRestantes < 0) return { texto: `${Math.abs(diasRestantes)}d vencido`, clase: 'vencido' };
     if (diasRestantes === 0) return { texto: 'Vence hoy', clase: 'vence-hoy' };
     if (diasRestantes <= 3) return { texto: `${diasRestantes}d`, clase: 'proximo-vencer' };
     return { texto: 'Al día', clase: 'al-dia' };

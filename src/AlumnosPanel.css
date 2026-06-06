@@ -540,6 +540,12 @@
   color: #c62828;
 }
 
+.badge-vencido {
+  background: #ffcccb;
+  color: #8b0000;
+  font-weight: 700;
+}
+
 .badge-sin-plan {
   background: #e0e0e0;
   color: #666;
