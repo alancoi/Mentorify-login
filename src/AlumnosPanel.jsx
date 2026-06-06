@@ -17,7 +17,6 @@ export default function AlumnosPanel() {
   const [coachId, setCoachId] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errorReport, setErrorReport] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [formData, setFormData] = useState({
     nombre: '',
@@ -441,16 +440,22 @@ export default function AlumnosPanel() {
             </div>
 
             <div className="settings-tab">
-              <h3>📢 Reportar Error</h3>
-              <form onSubmit={handleReportError} className="settings-form">
-                <textarea 
-                  placeholder="Describe el error que encontraste..."
-                  value={errorReport}
-                  onChange={(e) => setErrorReport(e.target.value)}
-                  rows="4"
-                />
-                <button type="submit" className="btn-primary">Enviar reporte</button>
-              </form>
+              <h3>📧 Reportar Errores o Mejoras</h3>
+              <p style={{ color: '#666', marginBottom: '1rem' }}>
+                ¿Encontraste un error? ¿Tienes una idea de mejora?
+              </p>
+              <p style={{ color: '#6C4DFF', fontWeight: 'bold', marginBottom: '1rem' }}>
+                appmentorify@gmail.com
+              </p>
+              <a 
+                href="https://mail.google.com/mail/u/0/?to=appmentorify@gmail.com&subject=Reporte%20de%20Error%20o%20Mejora%20-%20Mentorify"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+                style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
+              >
+                ✉️ Escribir a Gmail
+              </a>
             </div>
 
             {successMsg && <p className="success-msg">{successMsg}</p>}
