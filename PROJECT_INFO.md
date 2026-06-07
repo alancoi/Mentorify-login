@@ -147,3 +147,46 @@ Región: West US (Oregon)
 - Supabase: nufnlvalalandxodgcpr
 - Cron Job: cron-job.org (usuario: alancoimieres@gmail.com)
 
+
+---
+
+## 👨‍💼 PANEL ADMIN MENTORIFY - NUEVO PROYECTO (Junio 7, 2026)
+
+### ✅ COMPLETADO:
+- ✅ App separada creada (React + Vite)
+- ✅ Login seguro (solo 2 admins: alancoimieres@gmail.com, appmentorify@gmail.com)
+- ✅ Dashboard con:
+  - Tabla de todos los coaches
+  - Ver alumnos por coach (modal)
+  - Estadísticas globales (coaches totales, alumnos, ingresos)
+  - Editar/eliminar coaches
+  - Búsqueda por nombre/email
+  - Responsive mobile
+
+### 📁 CARPETA:
+- `/home/claude/mentorify-admin/`
+- Stack: React + Vite + Supabase
+- Misma BD que app coaches (nufnlvalalandxodgcpr)
+
+### 🔐 ADMINS AUTORIZADOS:
+1. alancoimieres@gmail.com
+2. appmentorify@gmail.com
+
+### 📋 PRÓXIMOS PASOS:
+1. Crear repo en GitHub: `Mentorify-admin`
+2. Push del código
+3. Conectar a Vercel
+4. Deploy en: mentorify-admin.vercel.app
+
+### 🎯 ARQUITECTURA:
+```
+URL PRINCIPAL: mentorify-login.vercel.app
+└─ Coaches se loguean
+└─ Manejan alumnos
+
+URL ADMIN: mentorify-admin.vercel.app (próximamente)
+└─ Solo 2 admins
+└─ Ven TODOS los coaches
+└─ Gestión global
+```
+
