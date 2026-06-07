@@ -3,7 +3,6 @@ import { supabase } from './supabase'
 import LoginPage from './LoginPage'
 import SetPasswordPage from './SetPasswordPage'
 import AlumnosPanel from './AlumnosPanel'
-import Logo from './Logo'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -11,17 +10,21 @@ export default function App() {
   const [needsNewPassword, setNeedsNewPassword] = useState(false)
 
   useEffect(() => {
+    // Verificar si hay sesión activa
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
+      if (session) {
+        setSession(session)
+      }
       setLoading(false)
     }).catch(err => {
-      console.error('Session error:', err)
+      console.error('Session check error:', err)
       setLoading(false)
     })
 
+    // Listener para cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event, session?.user?.email)
       setSession(session)
-      setLoading(false)
       if (event === 'PASSWORD_RECOVERY') {
         setNeedsNewPassword(true)
       }
@@ -30,7 +33,7 @@ export default function App() {
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => subscription?.unsubscribe()
   }, [])
 
   async function handleLogout() {
@@ -38,6 +41,7 @@ export default function App() {
     setSession(null)
   }
 
+  // Mostrar pantalla de carga
   if (loading) {
     return (
       <div style={{
@@ -59,13 +63,16 @@ export default function App() {
     )
   }
 
+  // Si necesita cambiar contraseña
   if (needsNewPassword) {
     return <SetPasswordPage onDone={() => setNeedsNewPassword(false)} />
   }
 
+  // Si NO hay sesión → mostrar LoginPage
   if (!session) {
-    return <LoginPage onLogin={(user) => setSession({ user })} />
+    return <LoginPage onLogin={(user) => setSession(user.session || { user })} />
   }
 
-  return <AlumnosPanel />
+  // Si hay sesión → mostrar panel de alumnos
+  return <AlumnosPanel onLogout={handleLogout} />
 }
