@@ -117,3 +117,33 @@ Región: West US (Oregon)
 ---
 
 **⚠️ GUARDAR SIEMPRE ESTA INFO PARA NO PERDER NADA**
+
+---
+
+## 📧 EMAILS AUTOMÁTICOS - ESTADO ACTUAL (Junio 6, 2026)
+
+### ✅ CONFIGURADO:
+1. **Edge Function** `send-notifications` ✅ DESPLEGADA en Supabase
+2. **Tabla** `notificaciones_enviadas` ✅ CREADA en Supabase
+3. **Cron Job** ✅ CREADO en cron-job.org
+   - URL: https://nufnlvalalandxodgcpr.supabase.co/functions/v1/send-notifications
+   - Schedule: Cada día 11 AM UTC = 8 AM Argentina
+   - Habilitado ✅
+
+### ⏳ PENDIENTE (PRÓXIMA SESIÓN):
+1. **Agregar Variable Brevo** en Supabase → Settings → Secrets
+   - Name: `BREVO_API_KEY`
+   - Value: `3954b0a3b8f1a5220856f7149636379ffccab-F1gl2aq2u2a7Ayir`
+
+### 🎯 QUÉ HACE UNA VEZ COMPLETADO:
+- ✅ Alumnos reciben email 3, 2, 1 día antes de vencer
+- ✅ Coach recibe email cuando alumno se vence (sin pagar)
+- ✅ Coach recibe email cuando alumno renueva
+- ✅ Automático cada día a las 8 AM
+- ✅ Sin duplicados (trackea con notificaciones_enviadas)
+
+### 📋 CREDENCIALES GUARDADAS:
+- Brevo API Key: `3954b0a3b8f1a5220856f7149636379ffccab-F1gl2aq2u2a7Ayir`
+- Supabase: nufnlvalalandxodgcpr
+- Cron Job: cron-job.org (usuario: alancoimieres@gmail.com)
+
