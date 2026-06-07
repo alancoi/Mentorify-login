@@ -306,6 +306,14 @@ export default function AlumnosPanel() {
     }
   }
 
+  const calcularDiasRestantes = (fechaRenovacion) => {
+    if (!fechaRenovacion) return null;
+    const hoy = new Date();
+    const renovacion = new Date(fechaRenovacion);
+    const diff = Math.ceil((renovacion - hoy) / (1000 * 60 * 60 * 24));
+    return diff;
+  };
+
   const filteredAlumnos = alumnos.filter(a => {
     let matchFiltro = true;
     if (filtro === 'Activos') {
@@ -407,14 +415,6 @@ export default function AlumnosPanel() {
   async function handleLogout() {
     await supabase.auth.signOut();
   }
-
-  const calcularDiasRestantes = (fechaRenovacion) => {
-    if (!fechaRenovacion) return null;
-    const hoy = new Date();
-    const renovacion = new Date(fechaRenovacion);
-    const diff = Math.ceil((renovacion - hoy) / (1000 * 60 * 60 * 24));
-    return diff;
-  };
 
   const getEstadoBadge = (diasRestantes) => {
     if (diasRestantes === null) return { texto: 'Sin plan', clase: 'sin-plan' };
