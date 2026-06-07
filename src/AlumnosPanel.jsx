@@ -5,7 +5,7 @@ import './AlumnosPanel.css';
 
 export default function AlumnosPanel() {
   const [alumnos, setAlumnos] = useState([]);
-  const [filtro, setFiltro] = useState('Activo');
+  const [filtro, setFiltro] = useState('Activos');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -307,7 +307,11 @@ export default function AlumnosPanel() {
   }
 
   const filteredAlumnos = alumnos.filter(a => {
-    const matchFiltro = filtro === 'Todos' || a.estado === filtro;
+    let matchFiltro = true;
+    if (filtro === 'Activos') {
+      const dr = calcularDiasRestantes(a.fecha_renovacion);
+      matchFiltro = dr !== null && dr > 3;
+    }
     const matchSearch = a.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                        a.email?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchFiltro && matchSearch;
@@ -668,7 +672,7 @@ export default function AlumnosPanel() {
           />
         </div>
         <div className="filters">
-          {['Todos', 'Activo'].map(estado => (
+          {['Todos', 'Activos'].map(estado => (
             <button 
               key={estado}
               className={`filter-btn ${filtro === estado ? 'active' : ''}`}
