@@ -442,27 +442,27 @@ export default function AlumnosPanel() {
   const calcularGanancia = () => {
     const hoy = new Date();
     const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 23, 59, 59);
     const inicioMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-    const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+    const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0, 23, 59, 59);
 
-    // Facturación mes pasado: alumnos cuya fecha_renovacion cae en el mes pasado
+    // Facturación mes pasado: alumnos cuya fecha_inicio fue el mes pasado
     const totalIngresoMesPasado = alumnos
       .filter(a => {
-        const f = new Date(a.fecha_renovacion);
+        const f = new Date(a.fecha_inicio);
         return f >= inicioMesPasado && f <= finMesPasado;
       })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    // Facturación este mes: alumnos cuya fecha_renovacion cae en este mes (hasta hoy)
+    // Facturación este mes: alumnos cuya fecha_inicio es este mes (hasta hoy)
     const totalIngresoEsteMes = alumnos
       .filter(a => {
-        const f = new Date(a.fecha_renovacion);
+        const f = new Date(a.fecha_inicio);
         return f >= inicioMes && f <= hoy;
       })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    // Clientes nuevos este mes: alumnos cuya fecha_inicio cae en este mes
+    // Clientes nuevos este mes
     const clientesNuevos = alumnos.filter(a => {
       const f = new Date(a.fecha_inicio);
       return f >= inicioMes && f <= finMes;
