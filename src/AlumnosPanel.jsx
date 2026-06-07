@@ -17,6 +17,7 @@ export default function AlumnosPanel() {
   const [showSettings, setShowSettings] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [coachId, setCoachId] = useState(null);
+  const [coachNombre, setCoachNombre] = useState('');
   const [coachPlan, setCoachPlan] = useState('basico');
   const [coachPlanLimite, setCoachPlanLimite] = useState(20);
   const [importData, setImportData] = useState([]);
@@ -50,7 +51,7 @@ export default function AlumnosPanel() {
 
       let { data: coach, error: getError } = await supabase
         .from('coaches')
-        .select('id, plan, plan_limite')
+        .select('id, plan, plan_limite, nombre')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -69,6 +70,7 @@ export default function AlumnosPanel() {
 
       if (!coach || !coach.id) throw new Error('No coach ID');
       setCoachId(coach.id);
+      setCoachNombre(coach.nombre || '');
       setCoachPlan(coach.plan || 'basico');
       setCoachPlanLimite(coach.plan_limite || 20);
       loadAlumnos(coach.id);
@@ -325,6 +327,21 @@ export default function AlumnosPanel() {
     return matchFiltro && matchSearch;
   });
 
+  async function sendEmailAlumno(tipo, alumno) {
+    try {
+      await fetch('https://nufnlvalalandxodgcpr.supabase.co/functions/v1/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_qfqNxB63q60T-u-p3UlLoA_yCH9i0PS'}`
+        },
+        body: JSON.stringify({ tipo, alumno, coachNombre })
+      })
+    } catch (err) {
+      console.error('Error enviando email:', err)
+    }
+  }
+
   async function handleAddAlumno(e) {
     e.preventDefault();
     try {
@@ -352,6 +369,12 @@ export default function AlumnosPanel() {
           .eq('id', editingAlumno.id);
         
         if (err) throw err;
+
+        // Email renovación si cambió la fecha
+        const fechaCambio = formData.fecha_renovacion !== editingAlumno.fecha_renovacion;
+        if (fechaCambio && formData.email) {
+          sendEmailAlumno('renovacion', formData);
+        }
       } else {
         const { error: err } = await supabase.from('alumnos').insert([{
           nombre: formData.nombre,
@@ -366,6 +389,11 @@ export default function AlumnosPanel() {
         }]);
         
         if (err) throw err;
+
+        // Email bienvenida al crear alumno
+        if (formData.email) {
+          sendEmailAlumno('bienvenida', formData);
+        }
       }
       
       setFormData({
