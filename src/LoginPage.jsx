@@ -193,7 +193,10 @@ export default function LoginPage({ onLogin }) {
       else setError(err.message)
       return
     }
-    onLogin(data.user)
+    // Esperar a que onAuthStateChange actualice la sesión
+    setTimeout(() => {
+      window.location.href = '/'
+    }, 500)
   }
 
   async function handleForgot(e) {
