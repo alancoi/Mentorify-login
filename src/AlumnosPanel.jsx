@@ -492,7 +492,25 @@ export default function AlumnosPanel() {
   }
 
   if (error) {
-    return <div style={{ padding: '40px', textAlign: 'center', fontSize: '16px', color: '#f00' }}>Error: {error}</div>;
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <p style={{ color: '#f00', marginBottom: '20px' }}>Error: {error}</p>
+        <button 
+          onClick={() => window.location.href = '/'}
+          style={{
+            padding: '10px 20px',
+            background: '#6C4DFF',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          Volver al Login
+        </button>
+      </div>
+    );
   }
 
   return (
