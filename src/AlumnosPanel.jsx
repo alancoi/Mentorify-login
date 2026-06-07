@@ -307,11 +307,7 @@ export default function AlumnosPanel() {
   }
 
   const filteredAlumnos = alumnos.filter(a => {
-    let matchFiltro = true;
-    if (filtro === 'Activo') {
-      const dr = calcularDiasRestantes(a.fecha_renovacion);
-      matchFiltro = dr !== null && dr > 3;
-    }
+    const matchFiltro = filtro === 'Todos' || a.estado === filtro;
     const matchSearch = a.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                        a.email?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchFiltro && matchSearch;
