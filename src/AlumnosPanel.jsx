@@ -40,8 +40,13 @@ export default function AlumnosPanel() {
 
   async function initializeCoach() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user');
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        setError('No hay sesión activa. Por favor ingresa de nuevo.');
+        setLoading(false);
+        return;
+      }
 
       let { data: coach, error: getError } = await supabase
         .from('coaches')
@@ -69,7 +74,7 @@ export default function AlumnosPanel() {
       loadAlumnos(coach.id);
     } catch (err) {
       console.error('Init error:', err);
-      setError(err.message);
+      setError(err.message || 'Error al inicializar');
       setLoading(false);
     }
   }
