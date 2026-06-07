@@ -421,11 +421,17 @@ export default function AlumnosPanel() {
   };
 
   const stats = {
-    total: alumnos.length,
-    activos: alumnos.filter(a => a.estado === 'Activo').length,
-    vencerse: alumnos.filter(a => {
+    activos: alumnos.filter(a => {
       const dr = calcularDiasRestantes(a.fecha_renovacion);
-      return dr !== null && dr <= 3;
+      return dr !== null && dr > 3;
+    }).length,
+    porVencer: alumnos.filter(a => {
+      const dr = calcularDiasRestantes(a.fecha_renovacion);
+      return dr !== null && dr >= 0 && dr <= 3;
+    }).length,
+    vencidos: alumnos.filter(a => {
+      const dr = calcularDiasRestantes(a.fecha_renovacion);
+      return dr !== null && dr < 0;
     }).length,
   };
 
@@ -638,16 +644,16 @@ export default function AlumnosPanel() {
 
       <section className="stats">
         <div className="stat-card">
-          <div className="stat-number">{stats.total}</div>
-          <div className="stat-label">Total</div>
-        </div>
-        <div className="stat-card">
           <div className="stat-number">{stats.activos}</div>
           <div className="stat-label">Activos</div>
         </div>
-        <div className="stat-card alert">
-          <div className="stat-number">{stats.vencerse}</div>
-          <div className="stat-label">Por vencer</div>
+        <div className={`stat-card ${stats.porVencer > 0 ? 'alert-warning' : ''}`}>
+          <div className="stat-number" style={{ color: stats.porVencer > 0 ? '#e65100' : undefined }}>{stats.porVencer}</div>
+          <div className="stat-label">⚠️ Por vencer</div>
+        </div>
+        <div className={`stat-card ${stats.vencidos > 0 ? 'alert' : ''}`}>
+          <div className="stat-number" style={{ color: stats.vencidos > 0 ? '#c62828' : undefined }}>{stats.vencidos}</div>
+          <div className="stat-label">🔴 Vencidos</div>
         </div>
       </section>
 

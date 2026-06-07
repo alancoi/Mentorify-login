@@ -373,6 +373,14 @@
   border-left-color: #ff6b6b;
 }
 
+.stat-card.alert-warning {
+  border-left-color: #e65100;
+}
+
+.stat-card.alert-warning .stat-number {
+  color: #e65100;
+}
+
 .stat-number {
   font-size: 36px;
   font-weight: 700;
