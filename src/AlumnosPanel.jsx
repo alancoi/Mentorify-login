@@ -441,57 +441,37 @@ export default function AlumnosPanel() {
 
   const calcularGanancia = () => {
     const hoy = new Date();
-    const diaActual = hoy.getDate();
     const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-    
     const inicioMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
     const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
 
-    const clientesNuevos = alumnos.filter(a => {
-      const fechaInicio = new Date(a.fecha_inicio);
-      return fechaInicio >= inicioMes && fechaInicio <= finMes;
-    });
-
-    const totalIngresoEsteMes = alumnos
-      .filter(a => {
-        const fechaInicio = new Date(a.fecha_inicio);
-        return fechaInicio >= inicioMes && fechaInicio <= hoy;
-      })
-      .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
-
+    // Facturación mes pasado: alumnos cuya fecha_renovacion cae en el mes pasado
     const totalIngresoMesPasado = alumnos
       .filter(a => {
-        const fechaInicio = new Date(a.fecha_inicio);
-        return fechaInicio >= inicioMesPasado && fechaInicio <= finMesPasado;
+        const f = new Date(a.fecha_renovacion);
+        return f >= inicioMesPasado && f <= finMesPasado;
       })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
-    
-    const alumnosActivos = alumnos.filter(a => a.estado === 'Activo').length;
-    const ingresoActual = alumnos
-      .filter(a => a.estado === 'Activo')
+
+    // Facturación este mes: alumnos cuya fecha_renovacion cae en este mes (hasta hoy)
+    const totalIngresoEsteMes = alumnos
+      .filter(a => {
+        const f = new Date(a.fecha_renovacion);
+        return f >= inicioMes && f <= hoy;
+      })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
-    const porcentajeComparacion = totalIngresoMesPasado > 0 
-      ? (totalIngresoEsteMes / totalIngresoMesPasado * 100).toFixed(1)
-      : (totalIngresoEsteMes > 0 ? 100 : 0);
-
-    const diasTranscurridos = hoy.getDate();
-    const diasEnMes = finMes.getDate();
-    const proyeccion = (totalIngresoEsteMes / diasTranscurridos * diasEnMes).toFixed(2);
+    // Clientes nuevos este mes: alumnos cuya fecha_inicio cae en este mes
+    const clientesNuevos = alumnos.filter(a => {
+      const f = new Date(a.fecha_inicio);
+      return f >= inicioMes && f <= finMes;
+    }).length;
 
     return {
-      clientesNuevos: clientesNuevos.length,
       totalIngreso: totalIngresoEsteMes,
       ingresoMesPasado: totalIngresoMesPasado,
-      alumnosActivos: alumnosActivos,
-      ingresoActual: ingresoActual,
-      proximosVencer: alumnos.filter(a => {
-        const dr = calcularDiasRestantes(a.fecha_renovacion);
-        return dr !== null && dr <= 7 && dr > 0;
-      }).length,
-      porcentajeComparacion: porcentajeComparacion,
-      proyeccion: proyeccion
+      clientesNuevos,
     };
   };
 
@@ -566,26 +546,9 @@ export default function AlumnosPanel() {
               <div className="ganancia-subtitle">hasta hoy</div>
             </div>
             <div className="ganancia-card">
-              <div className="ganancia-label">Comparación con Mes Pasado</div>
-              <div className={`ganancia-value ${ganancia.porcentajeComparacion >= 0 ? 'positivo' : 'negativo'}`}>
-                {ganancia.porcentajeComparacion >= 0 ? '+' : ''}{ganancia.porcentajeComparacion}%
-              </div>
-              <div className="ganancia-subtitle">diferencia</div>
-            </div>
-            <div className="ganancia-card">
-              <div className="ganancia-label">Activos Nuevos Este Mes</div>
+              <div className="ganancia-label">Clientes Nuevos Este Mes</div>
               <div className="ganancia-value">{ganancia.clientesNuevos}</div>
-              <div className="ganancia-subtitle">clientes nuevos</div>
-            </div>
-            <div className="ganancia-card">
-              <div className="ganancia-label">Clientes Activos (total)</div>
-              <div className="ganancia-value">{ganancia.alumnosActivos}</div>
-              <div className="ganancia-subtitle">activos ahora</div>
-            </div>
-            <div className="ganancia-card alert">
-              <div className="ganancia-label">Por Vencer (7 días)</div>
-              <div className="ganancia-value">{ganancia.proximosVencer}</div>
-              <div className="ganancia-subtitle">a renovar</div>
+              <div className="ganancia-subtitle">incorporados este mes</div>
             </div>
           </div>
         </section>
