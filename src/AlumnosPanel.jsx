@@ -17,6 +17,8 @@ export default function AlumnosPanel() {
   const [showSettings, setShowSettings] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [coachId, setCoachId] = useState(null);
+  const [coachPlan, setCoachPlan] = useState('basico');
+  const [coachPlanLimite, setCoachPlanLimite] = useState(20);
   const [importData, setImportData] = useState([]);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,7 +45,7 @@ export default function AlumnosPanel() {
 
       let { data: coach, error: getError } = await supabase
         .from('coaches')
-        .select('id')
+        .select('id, plan, plan_limite')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -52,7 +54,7 @@ export default function AlumnosPanel() {
       if (!coach) {
         const { data: newCoach, error: insertError } = await supabase
           .from('coaches')
-          .insert([{ user_id: user.id, nombre: user.email.split('@')[0] }])
+          .insert([{ user_id: user.id, nombre: user.email.split('@')[0], plan: 'basico', plan_limite: 20 }])
           .select();
         
         if (insertError) throw insertError;
@@ -62,6 +64,8 @@ export default function AlumnosPanel() {
 
       if (!coach || !coach.id) throw new Error('No coach ID');
       setCoachId(coach.id);
+      setCoachPlan(coach.plan || 'basico');
+      setCoachPlanLimite(coach.plan_limite || 20);
       loadAlumnos(coach.id);
     } catch (err) {
       console.error('Init error:', err);
@@ -309,6 +313,12 @@ export default function AlumnosPanel() {
     try {
       if (!coachId) throw new Error('Coach not initialized');
       
+      // Validar límite de alumnos
+      if (!editingAlumno && alumnos.length >= coachPlanLimite) {
+        alert(`❌ Límite alcanzado: tu plan ${coachPlan} permite máximo ${coachPlanLimite} alumnos. Contacta al admin para upgrade.`);
+        return;
+      }
+      
       if (editingAlumno) {
         const { error: err } = await supabase
           .from('alumnos')
@@ -492,6 +502,10 @@ export default function AlumnosPanel() {
           />
           <div className="header-text">
             <h1>Mentorify</h1>
+            <p className="header-plan">
+              Plan: <strong>{coachPlan === 'basico' ? 'Básico' : coachPlan === 'medio' ? 'Medio' : 'Pro'}</strong> 
+              ({alumnos.length}/{coachPlanLimite} alumnos)
+            </p>
           </div>
         </div>
         <div className="header-right">

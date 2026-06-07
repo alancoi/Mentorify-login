@@ -43,6 +43,17 @@
   font-weight: 500;
 }
 
+.header-plan {
+  color: #6C4DFF !important;
+  font-size: 12px !important;
+  margin-top: 0.3rem !important;
+}
+
+.header-plan strong {
+  color: #6C4DFF;
+  font-weight: 700;
+}
+
 .header-right {
   display: flex;
   gap: 0.5rem;
