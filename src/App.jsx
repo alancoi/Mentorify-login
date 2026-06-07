@@ -14,10 +14,14 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
+    }).catch(err => {
+      console.error('Session error:', err)
+      setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
+      setLoading(false)
       if (event === 'PASSWORD_RECOVERY') {
         setNeedsNewPassword(true)
       }
