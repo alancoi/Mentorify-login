@@ -369,12 +369,6 @@ export default function AlumnosPanel() {
           .eq('id', editingAlumno.id);
         
         if (err) throw err;
-
-        // Email renovación si cambió la fecha
-        const fechaCambio = formData.fecha_renovacion !== editingAlumno.fecha_renovacion;
-        if (fechaCambio && formData.email) {
-          sendEmailAlumno('renovacion', formData);
-        }
       } else {
         const { error: err } = await supabase.from('alumnos').insert([{
           nombre: formData.nombre,
@@ -389,11 +383,6 @@ export default function AlumnosPanel() {
         }]);
         
         if (err) throw err;
-
-        // Email bienvenida al crear alumno
-        if (formData.email) {
-          sendEmailAlumno('bienvenida', formData);
-        }
       }
       
       setFormData({
