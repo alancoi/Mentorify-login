@@ -17,6 +17,7 @@ export default function AlumnosPanel() {
   const [showSettings, setShowSettings] = useState(false);
   const [showRenovarModal, setShowRenovarModal] = useState(false);
   const [alumnoARenovar, setAlumnoARenovar] = useState(null);
+  const [showImport, setShowImport] = useState(false);
   const [coachId, setCoachId] = useState(null);
   const [coachNombre, setCoachNombre] = useState('');
   const [coachPlan, setCoachPlan] = useState('basico');
