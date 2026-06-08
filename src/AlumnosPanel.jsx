@@ -15,7 +15,8 @@ export default function AlumnosPanel() {
   const [showForm, setShowForm] = useState(false);
   const [showGanancia, setShowGanancia] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showImport, setShowImport] = useState(false);
+  const [showRenovarModal, setShowRenovarModal] = useState(false);
+  const [alumnoARenovar, setAlumnoARenovar] = useState(null);
   const [coachId, setCoachId] = useState(null);
   const [coachNombre, setCoachNombre] = useState('');
   const [coachPlan, setCoachPlan] = useState('basico');
@@ -403,6 +404,31 @@ export default function AlumnosPanel() {
     }
   }
 
+  async function handleRenovar(alumno, meses) {
+    try {
+      const base = alumno.fecha_renovacion
+        ? new Date(alumno.fecha_renovacion)
+        : new Date();
+      // Si ya venció, renovar desde hoy
+      const desde = base < new Date() ? new Date() : base;
+      const nueva = new Date(desde);
+      nueva.setMonth(nueva.getMonth() + meses);
+      const nuevaFecha = nueva.toISOString().split('T')[0];
+
+      const { error } = await supabase
+        .from('alumnos')
+        .update({ fecha_renovacion: nuevaFecha })
+        .eq('id', alumno.id);
+
+      if (error) throw error;
+      setShowRenovarModal(false);
+      setAlumnoARenovar(null);
+      loadAlumnos(coachId);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
   async function handleDeleteAlumno(id) {
     if (!confirm('¿Eliminar este alumno?')) return;
     try {
@@ -687,34 +713,50 @@ export default function AlumnosPanel() {
       </section>
 
       {showImport && (
-        <section className="import-section">
-          <div className="import-content">
-            <h2>📥 Importar Alumnos desde Excel/CSV</h2>
-            
+        <div className="modal-overlay" onClick={() => { setShowImport(false); setImportData([]); }}>
+          <div className="modal" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+            <h2>📥 Importar alumnos desde Excel</h2>
+
             {importData.length === 0 ? (
-              <div className="import-form">
-                <p style={{ marginBottom: '1rem', color: '#666' }}>
-                  Carga un archivo CSV o Excel con los siguientes campos:
+              <div>
+                <p style={{ color: '#666', fontSize: '14px', marginBottom: '1rem' }}>
+                  El archivo debe tener estas columnas (en ese orden):
                 </p>
-                <div className="import-example">
-                  <strong>Columnas esperadas:</strong><br/>
-                  nombre, email, plan_tipo, plan_precio, fecha_inicio, fecha_renovacion, estado, notas
+                <div className="import-example" style={{ fontSize: '12px', marginBottom: '1.25rem' }}>
+                  nombre · email · plan_tipo · plan_precio · fecha_inicio · fecha_renovacion · notas
                 </div>
-                <label className="import-label">
-                  <input 
-                    type="file" 
+                <button
+                  onClick={() => {
+                    const ws = XLSX.utils.aoa_to_sheet([
+                      ['nombre','email','plan_tipo','plan_precio','fecha_inicio','fecha_renovacion','notas'],
+                      ['Juan Pérez','juan@email.com','Básico','5000','2026-06-01','2026-07-01','']
+                    ]);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Alumnos');
+                    XLSX.writeFile(wb, 'template_alumnos.xlsx');
+                  }}
+                  className="btn-secondary"
+                  style={{ width: '100%', marginBottom: '1rem' }}
+                >
+                  📄 Descargar template de ejemplo
+                </button>
+                <label style={{ display: 'block', cursor: 'pointer' }}>
+                  <input
+                    type="file"
                     accept=".csv,.xlsx,.xls"
                     onChange={handleImportFile}
                     style={{ display: 'none' }}
                   />
-                  <span className="btn-primary" style={{ display: 'block', textAlign: 'center', cursor: 'pointer' }}>
-                    Seleccionar archivo
+                  <span className="btn-primary" style={{ display: 'block', textAlign: 'center' }}>
+                    Seleccionar archivo Excel / CSV
                   </span>
                 </label>
               </div>
             ) : (
-              <div className="import-preview">
-                <h3>Vista previa ({importData.length} alumnos)</h3>
+              <div>
+                <p style={{ color: '#333', fontSize: '14px', marginBottom: '1rem' }}>
+                  Se encontraron <strong>{importData.length} alumnos</strong>. Vista previa:
+                </p>
                 <div className="import-table-wrapper">
                   <table className="import-table">
                     <thead>
@@ -730,36 +772,36 @@ export default function AlumnosPanel() {
                         <tr key={idx}>
                           <td>{row.nombre}</td>
                           <td>{row.email}</td>
-                          <td>{row.plan_tipo}</td>
-                          <td>${row.plan_precio}</td>
+                          <td>{row.plan_tipo || '—'}</td>
+                          <td>${row.plan_precio || '0'}</td>
                         </tr>
                       ))}
                       {importData.length > 5 && (
                         <tr>
-                          <td colSpan="4" style={{ textAlign: 'center', color: '#999', fontSize: '12px' }}>
-                            ... y {importData.length - 5} más
+                          <td colSpan="4" style={{ textAlign: 'center', color: '#999', fontSize: '12px', padding: '8px' }}>
+                            ... y {importData.length - 5} alumno{importData.length - 5 !== 1 ? 's' : ''} más
                           </td>
                         </tr>
                       )}
                     </tbody>
                   </table>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.25rem' }}>
                   <button onClick={handleConfirmImport} className="btn-primary" style={{ flex: 1 }}>
                     ✅ Importar {importData.length} alumnos
                   </button>
-                  <button onClick={() => { setImportData([]); }} className="btn-secondary" style={{ flex: 1 }}>
-                    Cancelar
+                  <button onClick={() => setImportData([])} className="btn-secondary" style={{ flex: 1 }}>
+                    Volver
                   </button>
                 </div>
               </div>
             )}
-            
-            <button onClick={() => setShowImport(false)} className="btn-secondary" style={{ marginTop: '1rem', width: '100%' }}>
+
+            <button onClick={() => { setShowImport(false); setImportData([]); }} className="btn-secondary" style={{ marginTop: '1rem', width: '100%' }}>
               Cerrar
             </button>
           </div>
-        </section>
+        </div>
       )}
 
       {showForm && (
@@ -900,6 +942,7 @@ export default function AlumnosPanel() {
                         )}
                       </td>
                       <td className="acciones-cell">
+                        <button onClick={() => { setAlumnoARenovar(alumno); setShowRenovarModal(true); }} className="btn-action btn-renovar">🔄 Renovar</button>
                         <button onClick={() => handleEditAlumno(alumno)} className="btn-action btn-editar">✏️ Editar</button>
                         <button onClick={() => handleDeleteAlumno(alumno.id)} className="btn-action btn-delete">✕</button>
                       </td>
@@ -911,6 +954,42 @@ export default function AlumnosPanel() {
           </div>
         )}
       </section>
+
+      {showRenovarModal && alumnoARenovar && (
+        <div className="modal-overlay" onClick={() => setShowRenovarModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>🔄 Renovar acceso</h2>
+            <p style={{ color: '#555', marginBottom: '1.5rem' }}>
+              <strong>{alumnoARenovar.nombre}</strong> — elegí por cuánto tiempo renovar:
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1.5rem' }}>
+              {[1, 3, 6, 12].map(meses => (
+                <button
+                  key={meses}
+                  onClick={() => handleRenovar(alumnoARenovar, meses)}
+                  style={{
+                    padding: '16px',
+                    background: 'linear-gradient(135deg, #6C4DFF, #482DDB)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    fontWeight: '700',
+                    fontFamily: 'Inter, sans-serif',
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseOver={e => e.target.style.opacity = '0.85'}
+                  onMouseOut={e => e.target.style.opacity = '1'}
+                >
+                  {meses === 1 ? '1 mes' : meses === 12 ? '1 año' : `${meses} meses`}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowRenovarModal(false)} className="btn-secondary">Cancelar</button>
+          </div>
+        </div>
+      )}
 
       {selectedNota && (
         <div className="modal-overlay" onClick={() => setSelectedNota(null)}>

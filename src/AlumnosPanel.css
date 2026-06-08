@@ -1166,3 +1166,14 @@
     width: 100%;
   }
 }
+
+.btn-renovar {
+  background: linear-gradient(135deg, #6C4DFF, #482DDB) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.btn-renovar:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
