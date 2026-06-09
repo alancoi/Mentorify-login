@@ -231,31 +231,43 @@ export default function AlumnosPanel() {
 
   async function handleExportToExcel() {
     try {
-      const dataToExport = alumnos.map(alumno => ({
-        nombre: alumno.nombre || '',
-        email: alumno.email || '',
-        plan_tipo: alumno.plan_tipo || '',
-        plan_precio: alumno.plan_precio || '',
-        fecha_inicio: alumno.fecha_inicio || '',
-        fecha_renovacion: alumno.fecha_renovacion || '',
-        estado: alumno.estado || '',
-        notas: alumno.notas || ''
-      }));
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
+      const dataToExport = alumnos.map(alumno => {
+        const dr = calcularDiasRestantes(alumno.fecha_renovacion);
+        let estadoReal = 'Sin plan';
+        if (dr !== null) {
+          if (dr < 0) estadoReal = `Vencido (${Math.abs(dr)} días)`;
+          else if (dr === 0) estadoReal = 'Vence hoy';
+          else if (dr <= 3) estadoReal = `Por vencer (${dr} días)`;
+          else estadoReal = 'Activo';
+        }
+
+        return {
+          Nombre: alumno.nombre || '',
+          Email: alumno.email || '',
+          Plan: alumno.plan_tipo || '',
+          Precio: alumno.plan_precio || '',
+          'Fecha inicio': alumno.fecha_inicio
+            ? new Date(alumno.fecha_inicio).toLocaleDateString('es-AR')
+            : '',
+          'Fecha vencimiento': alumno.fecha_renovacion
+            ? new Date(alumno.fecha_renovacion).toLocaleDateString('es-AR')
+            : '',
+          'Días restantes': dr !== null ? dr : '',
+          Estado: estadoReal,
+          Notas: alumno.notas || ''
+        };
+      });
 
       const worksheet = XLSX.utils.json_to_sheet(dataToExport);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Alumnos');
 
-      // Ajustar ancho de columnas
       worksheet['!cols'] = [
-        { wch: 20 }, // nombre
-        { wch: 25 }, // email
-        { wch: 15 }, // plan_tipo
-        { wch: 12 }, // plan_precio
-        { wch: 15 }, // fecha_inicio
-        { wch: 15 }, // fecha_renovacion
-        { wch: 12 }, // estado
-        { wch: 30 }  // notas
+        { wch: 22 }, { wch: 28 }, { wch: 15 }, { wch: 12 },
+        { wch: 15 }, { wch: 18 }, { wch: 14 }, { wch: 22 }, { wch: 30 }
       ];
 
       XLSX.writeFile(workbook, `mentorify_alumnos_${new Date().toISOString().split('T')[0]}.xlsx`);
