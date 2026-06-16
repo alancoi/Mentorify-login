@@ -335,6 +335,9 @@ export default function AlumnosPanel() {
     if (filtro === 'Activos') {
       const dr = calcularDiasRestantes(a.fecha_renovacion);
       matchFiltro = dr !== null && dr > 3;
+    } else if (filtro === 'Por vencer') {
+      const dr = calcularDiasRestantes(a.fecha_renovacion);
+      matchFiltro = dr !== null && dr >= 0 && dr <= 3;
     }
     const matchSearch = a.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                        a.email?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -691,8 +694,8 @@ export default function AlumnosPanel() {
           />
         </div>
         <div className="filters">
-          {['Todos', 'Activos'].map(estado => (
-            <button 
+          {['Todos', 'Activos', 'Por vencer'].map(estado => (
+            <button
               key={estado}
               className={`filter-btn ${filtro === estado ? 'active' : ''}`}
               onClick={() => setFiltro(estado)}
