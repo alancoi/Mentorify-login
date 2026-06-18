@@ -50,6 +50,17 @@ async function createCoachUser(email, orderNumber) {
     })
 
     if (error) {
+      // Si el usuario ya existe, lo buscamos y retornamos
+      if (error.code === 'email_exists' || error.message.includes('already been registered')) {
+        console.log(`User ${email} already exists, fetching existing user...`)
+        // Obtener el usuario existente del admin API
+        const { data: existingUser, error: fetchError } = await supabase.auth.admin.listUsers()
+        if (!fetchError && existingUser) {
+          const user = existingUser.users.find(u => u.email === email)
+          if (user) return user
+        }
+        return null
+      }
       console.error('Error creating user:', error)
       return null
     }
