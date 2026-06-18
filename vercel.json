@@ -44,8 +44,5 @@
       "memory": 1024,
       "maxDuration": 60
     }
-  },
-  "buildCache": {
-    "node_modules": true
   }
 }
