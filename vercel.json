@@ -1,0 +1,51 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "framework": "vite",
+  "env": {
+    "VITE_SUPABASE_URL": {
+      "description": "Supabase project URL"
+    },
+    "VITE_SUPABASE_ANON_KEY": {
+      "description": "Supabase anonymous key (public)"
+    },
+    "SUPABASE_SERVICE_KEY": {
+      "description": "Supabase service role key (secret - for server-side only)"
+    },
+    "BREVO_API_KEY": {
+      "description": "Brevo/Sendinblue API key for sending emails"
+    },
+    "SHOPIFY_WEBHOOK_SECRET": {
+      "description": "Secret for verifying Shopify webhook signatures"
+    },
+    "MERCADOPAGO_ACCESS_TOKEN": {
+      "description": "Mercado Pago API access token (TEST- for development)"
+    },
+    "MERCADOPAGO_WEBHOOK_TOKEN": {
+      "description": "Token for verifying Mercado Pago webhooks"
+    },
+    "MERCADOPAGO_PLAN_BASICA": {
+      "description": "Mercado Pago plan ID for Básica ($19.990)"
+    },
+    "MERCADOPAGO_PLAN_ESTANDAR": {
+      "description": "Mercado Pago plan ID for Estándar ($29.990)"
+    },
+    "MERCADOPAGO_PLAN_PREMIUM": {
+      "description": "Mercado Pago plan ID for Premium ($39.990)"
+    },
+    "MENTORIFY_VIDEO_LINK": {
+      "description": "URL to tutorial video (optional)"
+    }
+  },
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x",
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "buildCache": {
+    "node_modules": true
+  }
+}
