@@ -73,7 +73,7 @@ async function createCoachUser(email, orderNumber) {
 }
 
 // Crear registro de coach en la BD
-async function createCoachRecord(userId, email, plan, studentLimit, orderNumber) {
+async function createCoachRecord(userId, email, plan, studentLimit, orderNumber, nombre, valorPlan) {
   try {
     const { data, error } = await supabase
       .from('coaches')
@@ -83,6 +83,8 @@ async function createCoachRecord(userId, email, plan, studentLimit, orderNumber)
         plan,
         student_limit: studentLimit,
         order_number: orderNumber,
+        nombre: nombre || email.split('@')[0], // Si no hay nombre, usa parte del email
+        valor_plan: valorPlan || 0,
         created_at: new Date().toISOString(),
         is_active: true,
       })
@@ -280,6 +282,12 @@ export default async function handler(req, res) {
 
     console.log(`Processing Shopify order: ${orderNumber} for ${email}`)
 
+    // Extraer nombre y precio del cliente
+    const firstName = order.customer?.first_name || ''
+    const lastName = order.customer?.last_name || ''
+    const nombre = `${firstName} ${lastName}`.trim()
+    const totalPrice = parseFloat(order.total_price) || 0
+
     // Determinar plan
     const { plan, limit } = determinePlanByPrice(lineItems)
 
@@ -290,7 +298,7 @@ export default async function handler(req, res) {
     }
 
     // Crear registro de coach
-    const coach = await createCoachRecord(user.id, email, plan, limit, orderNumber)
+    const coach = await createCoachRecord(user.id, email, plan, limit, orderNumber, nombre, totalPrice)
     if (!coach) {
       return res.status(500).json({ error: 'Failed to create coach record' })
     }
