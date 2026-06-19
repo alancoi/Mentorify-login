@@ -188,7 +188,7 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
               <div style="width: 60px; height: 60px; margin: 0 auto 15px;">
                 <img src="${logoUrl}" alt="Mentorify" style="width: 100%; height: 100%; object-fit: contain;">
               </div>
-              <h1 style="margin: 0; font-size: 26px; font-weight: 700;">¡Bienvenido a Mentorify!</h1>
+              <h1 style="margin: 0; font-size: 26px; font-weight: 700;">¡Bienvenid@ a Mentorify!</h1>
             </div>
 
             <div style="background: #f9f9f9; padding: 40px; border-radius: 0 0 10px 10px;">
@@ -211,10 +211,13 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
                 📝 <strong>Nota:</strong> Puedes cambiar tu contraseña desde adentro del panel.
               </div>
 
-              <div style="background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 25px 0;">
-                <div style="color: #2c3e50; font-size: 15px; font-weight: 600; margin-bottom: 12px;">📺 Video para aprender a usar la app</div>
-                <div style="color: #555; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">Mira este video de menos de 5 minutos para aprender a usar todas las funciones de Mentorify.</div>
-                <a href="${videoLink}" style="display: inline-block; background: #0066cc; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">Ver tutorial</a>
+              <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #ff6b6b;">
+                <div style="color: #ff6b6b; font-size: 15px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase;">⚠️ IMPORTANTE - VE ESTO PRIMERO</div>
+                <div style="color: #555; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                  Antes de entrar a la app, mira este video (menos de 5 minutos) para aprender cómo usarla, cómo fijarla en tu inicio y dejarla anclada.
+                </div>
+                <a href="https://drive.google.com/file/d/1-hVKxawRtOijnSoSKyh6c-3ESGonDRlv/view?usp=drive_link" style="display: inline-block; background: #0066cc; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">Ver video tutorial</a>
+                <div style="color: #666; font-size: 12px; margin-top: 10px;">(Podés descargarlo si querés)</div>
               </div>
 
               ${mercadoPagoUrl ? `
