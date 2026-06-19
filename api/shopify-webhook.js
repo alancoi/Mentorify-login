@@ -102,14 +102,14 @@ async function createCoachRecord(userId, email, plan, studentLimit, orderNumber)
 
 // Obtener URL de Mercado Pago según el plan
 function getMercadoPagoUrl(plan) {
-  const baseUrl = 'https://mercadopago.com.ar/checkout/v1/redirect'
+  const baseUrl = 'https://www.mercadopago.com.ar/checkout/v1/redirect'
   const planIds = {
     'Básica': process.env.MERCADOPAGO_PLAN_BASICA,
     'Estándar': process.env.MERCADOPAGO_PLAN_ESTANDAR,
     'Premium': process.env.MERCADOPAGO_PLAN_PREMIUM,
   }
   const planId = planIds[plan] || planIds['Básica']
-  return `${baseUrl}?pref_id=${planId}`
+  return `${baseUrl}?preapproval_plan_id=${planId}`
 }
 
 // Enviar email de bienvenida
