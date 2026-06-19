@@ -100,6 +100,18 @@ async function createCoachRecord(userId, email, plan, studentLimit, orderNumber)
   }
 }
 
+// Obtener URL de Mercado Pago según el plan
+function getMercadoPagoUrl(plan) {
+  const baseUrl = 'https://mercadopago.com.ar/checkout/v1/redirect'
+  const planIds = {
+    'Básica': process.env.MERCADOPAGO_PLAN_BASICA,
+    'Estándar': process.env.MERCADOPAGO_PLAN_ESTANDAR,
+    'Premium': process.env.MERCADOPAGO_PLAN_PREMIUM,
+  }
+  const planId = planIds[plan] || planIds['Básica']
+  return `${baseUrl}?pref_id=${planId}`
+}
+
 // Enviar email de bienvenida
 async function sendWelcomeEmail(email, password, orderNumber, plan) {
   if (!brevoApiKey) {
@@ -107,7 +119,9 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
     return false
   }
 
-  const videoLink = process.env.MENTORIFY_VIDEO_LINK || '[Video link will be added soon]'
+  const videoLink = process.env.MENTORIFY_VIDEO_LINK || 'https://vimeo.com/1202653327'
+  const mercadoPagoUrl = getMercadoPagoUrl(plan)
+  const logoUrl = 'https://cdn.phototourl.com/free/2026-06-18-03edb6b5-7c34-4634-9c28-c13bc35d47dc.png'
 
   try {
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -119,68 +133,52 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
       },
       body: JSON.stringify({
         to: [{ email, name: '' }],
-        subject: `¡Bienvenido a Mentorify! Acceso inmediato a tu cuenta ${plan}`,
+        subject: `¡Bienvenido a Mentorify! Tu acceso está listo`,
         htmlContent: `
           <div style="font-family: Poppins, Arial; max-width: 600px; margin: 0 auto; color: #333;">
             <div style="background: linear-gradient(135deg, #6c4dff 0%, #482ddb 100%); padding: 40px; text-align: center; color: white; border-radius: 10px 10px 0 0;">
-              <h1 style="margin: 0; font-size: 28px;">¡Bienvenido a Mentorify!</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">Tu plataforma de coaching integral</p>
+              <div style="width: 60px; height: 60px; margin: 0 auto 15px;">
+                <img src="${logoUrl}" alt="Mentorify" style="width: 100%; height: 100%; object-fit: contain;">
+              </div>
+              <h1 style="margin: 0; font-size: 26px; font-weight: 700;">¡Bienvenido a Mentorify!</h1>
             </div>
 
             <div style="background: #f9f9f9; padding: 40px; border-radius: 0 0 10px 10px;">
-              <h2 style="color: #6c4dff; margin-top: 0;">Tus credenciales de acceso</h2>
-
-              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #6c4dff; margin: 20px 0;">
-                <p style="margin: 0 0 10px 0; color: #666;"><strong>Email:</strong></p>
-                <p style="margin: 0 0 20px 0; font-family: monospace; font-size: 14px; background: #f5f5f5; padding: 10px; border-radius: 4px;">${email}</p>
-
-                <p style="margin: 0 0 10px 0; color: #666;"><strong>Contraseña:</strong></p>
-                <p style="margin: 0; font-family: monospace; font-size: 14px; background: #f5f5f5; padding: 10px; border-radius: 4px;">${password}</p>
+              <div style="background: #f9f9f9; padding: 25px; border-radius: 8px; border-left: 4px solid #6c4dff; margin: 25px 0;">
+                <div style="margin-bottom: 20px;">
+                  <div style="color: #666; font-weight: 600; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Tu email</div>
+                  <div style="font-family: monospace; font-size: 16px; background: white; padding: 12px; border-radius: 4px; border: 1px solid #e0e0e0; word-break: break-all; font-weight: 600; color: #2c3e50;">${email}</div>
+                </div>
+                <div style="margin-bottom: 0;">
+                  <div style="color: #666; font-weight: 600; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Contraseña</div>
+                  <div style="font-family: monospace; font-size: 16px; background: white; padding: 12px; border-radius: 4px; border: 1px solid #e0e0e0; word-break: break-all; font-weight: 600; color: #2c3e50;">${password}</div>
+                </div>
               </div>
 
-              <p style="color: #666; font-size: 13px;">
+              <div style="text-align: center; margin: 15px 0;">
+                <a href="https://mentorify.app/login" style="display: inline-block; background: #6c4dff; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">Acceder a Mentorify</a>
+              </div>
+
+              <div style="color: #666; font-size: 13px; margin: 20px 0; line-height: 1.6;">
                 📝 <strong>Nota:</strong> Puedes cambiar tu contraseña desde adentro del panel.
-              </p>
-
-              <div style="background: #f0e5ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #6c4dff;">Tu plan: <strong>${plan}</strong></h3>
-                <p style="margin: 0; color: #666; font-size: 14px;">Acceso completo a todas las funciones del plan.</p>
               </div>
 
-              <div style="background: #e8f4ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #0066cc;">📺 Tutorial completo</h3>
-                <p style="margin: 10px 0; color: #666; font-size: 14px;">
-                  Mira este video para aprender a usar todas las funciones de Mentorify:
-                </p>
-                <a href="${videoLink}" style="display: inline-block; background: #0066cc; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; margin: 10px 0;">
-                  Ver tutorial →
-                </a>
+              <div style="background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                <div style="color: #2c3e50; font-size: 15px; font-weight: 600; margin-bottom: 12px;">📺 Video para aprender a usar la app</div>
+                <div style="color: #555; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">Mira este video de menos de 5 minutos para aprender a usar todas las funciones de Mentorify.</div>
+                <a href="${videoLink}" style="display: inline-block; background: #0066cc; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">Ver tutorial</a>
               </div>
 
-              <h3 style="color: #6c4dff;">Próximos pasos:</h3>
-              <ol style="color: #666; line-height: 1.8;">
-                <li>Inicia sesión con tus credenciales</li>
-                <li>Completa tu perfil de coach</li>
-                <li>Importa o agrega tus alumnos</li>
-                <li>¡Comienza a gestionar tu coaching!</li>
-              </ol>
-
-              <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
-                <p style="margin: 0; color: #856404; font-size: 13px;">
-                  <strong>🔄 Renovación automática:</strong> Tu suscripción se renovará automáticamente. Recibirás un email de confirmación cuando se procese el pago.
-                </p>
+              <div style="background: #fffbf0; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #ff9800;">
+                <div style="color: #ff9800; font-size: 15px; font-weight: 600; margin-bottom: 12px;">💳 Activá tu pago mensual</div>
+                <div style="color: #555; font-size: 14px; margin-bottom: 15px;">Configura tu suscripción para que el acceso se renueve automáticamente cada mes.</div>
+                <a href="${mercadoPagoUrl}" style="display: inline-block; background: #00a8e8; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">Ir a Mercado Pago</a>
               </div>
 
-              <div style="text-align: center; margin-top: 30px;">
-                <a href="https://mentorify.app/login" style="display: inline-block; background: #6c4dff; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-                  Acceder a Mentorify →
-                </a>
-              </div>
-
-              <p style="color: #999; font-size: 12px; margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 20px;">
-                Si tienes preguntas, responde a este email y nos contactaremos en breve.<br>
+              <div style="color: #999; font-size: 12px; margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 20px; line-height: 1.6;">
+                Si tienes preguntas, responde a este email.<br>
                 <strong>Mentorify</strong> — El orden detrás del impacto.
-              </p>
+              </div>
             </div>
           </div>
         `,
