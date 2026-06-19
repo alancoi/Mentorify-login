@@ -158,12 +158,16 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
   }
 
   const videoLink = process.env.MENTORIFY_VIDEO_LINK || 'https://vimeo.com/1202653327'
-  const mercadoPagoUrl = await createMercadoPagoSubscriptionPreference(email, plan)
   const logoUrl = 'https://cdn.phototourl.com/free/2026-06-18-03edb6b5-7c34-4634-9c28-c13bc35d47dc.png'
 
-  if (!mercadoPagoUrl) {
-    console.warn('Failed to create Mercado Pago subscription preference')
-    // Continuamos sin el link de Mercado Pago por ahora
+  // Intentar crear preferencia de suscripción en background (sin afectar flujo principal)
+  // El botón solo aparecerá cuando esto funcione correctamente
+  let mercadoPagoUrl = null
+  if (process.env.MERCADOPAGO_ACCESS_TOKEN) {
+    mercadoPagoUrl = await createMercadoPagoSubscriptionPreference(email, plan)
+    if (!mercadoPagoUrl) {
+      console.log(`[DEBUG] Mercado Pago preference creation pending for ${email} (${plan})`)
+    }
   }
 
   try {
