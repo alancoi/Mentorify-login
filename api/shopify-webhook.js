@@ -132,6 +132,7 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
+        sender: { name: 'Mentorify', email: 'noreply@mentorify.app' },
         to: [{ email, name: '' }],
         subject: `¡Bienvenido a Mentorify! Tu acceso está listo`,
         htmlContent: `
