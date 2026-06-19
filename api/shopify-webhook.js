@@ -100,16 +100,54 @@ async function createCoachRecord(userId, email, plan, studentLimit, orderNumber)
   }
 }
 
-// Obtener URL de Mercado Pago según el plan
-function getMercadoPagoUrl(plan) {
-  const baseUrl = 'https://www.mercadopago.com.ar/checkout/v1/redirect'
+// Crear preferencia de suscripción en Mercado Pago
+async function createMercadoPagoSubscriptionPreference(email, plan) {
+  const mercadoPagoToken = process.env.MERCADOPAGO_ACCESS_TOKEN
+  if (!mercadoPagoToken) {
+    console.error('MERCADOPAGO_ACCESS_TOKEN not configured')
+    return null
+  }
+
   const planIds = {
     'Básica': process.env.MERCADOPAGO_PLAN_BASICA,
     'Estándar': process.env.MERCADOPAGO_PLAN_ESTANDAR,
     'Premium': process.env.MERCADOPAGO_PLAN_PREMIUM,
   }
   const planId = planIds[plan] || planIds['Básica']
-  return `${baseUrl}?preapproval_plan_id=${planId}`
+
+  try {
+    const response = await fetch('https://api.mercadopago.com/preapproval', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${mercadoPagoToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        preapproval_plan_id: planId,
+        payer_email: email,
+        reference_id: `mentorify-${Date.now()}`,
+        auto_recurring: {
+          frequency: 1,
+          frequency_type: 'months',
+          start_date: new Date().toISOString(),
+          end_date: null,
+        },
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('Mercado Pago error:', error)
+      return null
+    }
+
+    const data = await response.json()
+    console.log('Subscription preference created:', data.id)
+    return data.init_point // URL de checkout
+  } catch (err) {
+    console.error('Exception creating subscription preference:', err)
+    return null
+  }
 }
 
 // Enviar email de bienvenida
@@ -120,8 +158,13 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
   }
 
   const videoLink = process.env.MENTORIFY_VIDEO_LINK || 'https://vimeo.com/1202653327'
-  const mercadoPagoUrl = getMercadoPagoUrl(plan)
+  const mercadoPagoUrl = await createMercadoPagoSubscriptionPreference(email, plan)
   const logoUrl = 'https://cdn.phototourl.com/free/2026-06-18-03edb6b5-7c34-4634-9c28-c13bc35d47dc.png'
+
+  if (!mercadoPagoUrl) {
+    console.warn('Failed to create Mercado Pago subscription preference')
+    // Continuamos sin el link de Mercado Pago por ahora
+  }
 
   try {
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -170,11 +213,13 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
                 <a href="${videoLink}" style="display: inline-block; background: #0066cc; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">Ver tutorial</a>
               </div>
 
+              ${mercadoPagoUrl ? `
               <div style="background: #fffbf0; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #ff9800;">
                 <div style="color: #ff9800; font-size: 15px; font-weight: 600; margin-bottom: 12px;">💳 Activá tu pago mensual</div>
                 <div style="color: #555; font-size: 14px; margin-bottom: 15px;">Configura tu suscripción para que el acceso se renueve automáticamente cada mes.</div>
                 <a href="${mercadoPagoUrl}" style="display: inline-block; background: #00a8e8; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">Ir a Mercado Pago</a>
               </div>
+              ` : ''}
 
               <div style="color: #999; font-size: 12px; margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 20px; line-height: 1.6;">
                 Si tienes preguntas, responde a este email.<br>
