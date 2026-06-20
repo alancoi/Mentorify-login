@@ -80,8 +80,13 @@ export default function AlumnosPanel() {
       setCoachPlanLimite(coach.student_limit || 20);
       setNombreNegocio(coach.nombre_negocio || '');
 
+      console.log('Coach data:', coach);
+      console.log('nombre_negocio value:', coach.nombre_negocio);
+      console.log('Is nombre_negocio falsy?', !coach.nombre_negocio);
+
       // Si no tiene nombre_negocio, mostrar modal
       if (!coach.nombre_negocio) {
+        console.log('Seteando showNombreNegocioModal a true');
         setShowNombreNegocioModal(true);
       }
 
@@ -118,18 +123,30 @@ export default function AlumnosPanel() {
       return;
     }
 
+    if (!coachId) {
+      alert('Error: No se pudo identificar tu cuenta');
+      return;
+    }
+
     try {
-      const { error } = await supabase
+      console.log('Guardando nombre_negocio:', tempNombreNegocio, 'para coachId:', coachId);
+
+      const { data, error } = await supabase
         .from('coaches')
         .update({ nombre_negocio: tempNombreNegocio })
-        .eq('id', coachId);
+        .eq('id', coachId)
+        .select();
+
+      console.log('Respuesta:', data, error);
 
       if (error) throw error;
 
       setNombreNegocio(tempNombreNegocio);
       setShowNombreNegocioModal(false);
       setTempNombreNegocio('');
+      alert('✅ Nombre guardado correctamente');
     } catch (err) {
+      console.error('Error al guardar:', err);
       alert('Error al guardar: ' + err.message);
     }
   }
@@ -567,6 +584,8 @@ export default function AlumnosPanel() {
   };
 
   const ganancia = calcularGanancia();
+
+  console.log('Render AlumnosPanel - showNombreNegocioModal:', showNombreNegocioModal, 'nombreNegocio:', nombreNegocio);
 
   if (loading) {
     return <div style={{ padding: '40px', textAlign: 'center', fontSize: '18px', color: '#666' }}>Cargando...</div>;
