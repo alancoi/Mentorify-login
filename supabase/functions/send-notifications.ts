@@ -37,13 +37,15 @@ async function checkAndSendNotifications() {
     .select("*, coaches(*)")
     .not("fecha_renovacion", "is", null);
 
+  console.log("Query result - data:", alumnos, "error:", error);
+
   if (error) {
     console.error("Error fetching alumnos:", error);
     return;
   }
 
   if (!alumnos || !Array.isArray(alumnos)) {
-    console.error("Alumnos is not an array:", alumnos);
+    console.error("Alumnos is not an array:", typeof alumnos, alumnos);
     return;
   }
 
