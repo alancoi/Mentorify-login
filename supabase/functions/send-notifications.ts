@@ -42,6 +42,11 @@ async function checkAndSendNotifications() {
     return;
   }
 
+  if (!alumnos || !Array.isArray(alumnos)) {
+    console.error("Alumnos is not an array:", alumnos);
+    return;
+  }
+
   for (const alumno of alumnos) {
     const fechaRenovacion = new Date(alumno.fecha_renovacion);
     const hoy = new Date(today);
