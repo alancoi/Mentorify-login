@@ -34,7 +34,7 @@ async function checkAndSendNotifications() {
   // Obtener todos los alumnos con coach info
   const { data: alumnos, error } = await supabase
     .from("alumnos")
-    .select("*, coaches(nombre, email, nombre_negocio)")
+    .select("*, coaches(*)")
     .not("fecha_renovacion", "is", null);
 
   if (error) {
