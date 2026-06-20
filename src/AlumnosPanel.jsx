@@ -22,6 +22,9 @@ export default function AlumnosPanel() {
   const [coachNombre, setCoachNombre] = useState('');
   const [coachPlan, setCoachPlan] = useState('basico');
   const [coachPlanLimite, setCoachPlanLimite] = useState(20);
+  const [nombreNegocio, setNombreNegocio] = useState('');
+  const [showNombreNegocioModal, setShowNombreNegocioModal] = useState(false);
+  const [tempNombreNegocio, setTempNombreNegocio] = useState('');
   const [importData, setImportData] = useState([]);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -53,7 +56,7 @@ export default function AlumnosPanel() {
 
       let { data: coach, error: getError } = await supabase
         .from('coaches')
-        .select('id, plan, student_limit, nombre')
+        .select('id, plan, student_limit, nombre, nombre_negocio')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -75,6 +78,13 @@ export default function AlumnosPanel() {
       setCoachNombre(coach.nombre || '');
       setCoachPlan(coach.plan || 'basico');
       setCoachPlanLimite(coach.student_limit || 20);
+      setNombreNegocio(coach.nombre_negocio || '');
+
+      // Si no tiene nombre_negocio, mostrar modal
+      if (!coach.nombre_negocio) {
+        setShowNombreNegocioModal(true);
+      }
+
       loadAlumnos(coach.id);
     } catch (err) {
       console.error('Init error:', err);
@@ -99,6 +109,28 @@ export default function AlumnosPanel() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function saveNombreNegocio() {
+    if (!tempNombreNegocio.trim()) {
+      alert('Por favor ingresa el nombre de tu negocio');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('coaches')
+        .update({ nombre_negocio: tempNombreNegocio })
+        .eq('id', coachId);
+
+      if (error) throw error;
+
+      setNombreNegocio(tempNombreNegocio);
+      setShowNombreNegocioModal(false);
+      setTempNombreNegocio('');
+    } catch (err) {
+      alert('Error al guardar: ' + err.message);
     }
   }
 
@@ -574,8 +606,13 @@ export default function AlumnosPanel() {
           />
           <div className="header-text">
             <h1>Mentorify</h1>
+            {nombreNegocio && (
+              <p style={{ fontSize: '16px', color: '#6C4DFF', fontWeight: '600', margin: '4px 0' }}>
+                {nombreNegocio}
+              </p>
+            )}
             <p className="header-plan">
-              Plan: <strong>{coachPlan === 'basico' ? 'Básico' : coachPlan === 'estandar' ? 'Estándar' : 'Premium'}</strong> 
+              Plan: <strong>{coachPlan === 'basico' ? 'Básico' : coachPlan === 'estandar' ? 'Estándar' : 'Premium'}</strong>
               ({alumnos.length}/{coachPlanLimite} alumnos)
             </p>
           </div>
@@ -1015,6 +1052,61 @@ export default function AlumnosPanel() {
               {selectedNota.notas}
             </div>
             <button onClick={() => setSelectedNota(null)} className="btn-secondary">Cerrar</button>
+          </div>
+        </div>
+      )}
+
+      {showNombreNegocioModal && (
+        <div className="modal-overlay" onClick={() => setShowNombreNegocioModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Nombre de tu negocio</h2>
+            <p style={{ fontSize: '14px', color: '#888', marginBottom: '1rem' }}>Coaching o consultoría</p>
+
+            <input
+              type="text"
+              placeholder="Academia de Liderazgo, Coaching Ejecutivo, Cantando con Gabriel, Mariana Nutrición"
+              value={tempNombreNegocio}
+              onChange={(e) => setTempNombreNegocio(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') saveNombreNegocio();
+              }}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '14px',
+                marginBottom: '1rem',
+                fontFamily: 'Inter, sans-serif',
+                boxSizing: 'border-box'
+              }}
+              autoFocus
+            />
+
+            <p style={{ fontSize: '13px', color: '#666', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+              Con este nombre se enviarán las notificaciones automáticas a tus alumnos
+            </p>
+
+            <button
+              onClick={saveNombreNegocio}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'linear-gradient(135deg, #6C4DFF, #482DDB)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                fontFamily: 'Inter, sans-serif',
+                transition: 'opacity 0.2s'
+              }}
+              onMouseOver={e => e.target.style.opacity = '0.85'}
+              onMouseOut={e => e.target.style.opacity = '1'}
+            >
+              Ingresar
+            </button>
           </div>
         </div>
       )}

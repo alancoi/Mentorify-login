@@ -18,7 +18,7 @@ async function sendBrevoEmail(to, subject, htmlContent) {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      sender: { name: "Mentorify", email: "noreply@mentorify.app" },
+      sender: { name: "Mentorify", email: "appmentorify@gmail.com" },
       to: [{ email: to }],
       subject: subject,
       htmlContent: htmlContent,
@@ -30,11 +30,11 @@ async function sendBrevoEmail(to, subject, htmlContent) {
 
 async function checkAndSendNotifications() {
   const today = new Date().toISOString().split("T")[0];
-  
+
   // Obtener todos los alumnos con coach info
   const { data: alumnos, error } = await supabase
     .from("alumnos")
-    .select("*, coaches(nombre, email)")
+    .select("*, coaches(nombre, email, nombre_negocio)")
     .not("fecha_renovacion", "is", null);
 
   if (error) {
@@ -58,17 +58,18 @@ async function checkAndSendNotifications() {
         .gte("fecha_envio", new Date(today).toISOString());
 
       if (!existente || existente.length === 0) {
+        const nombreNegocio = alumno.coaches.nombre_negocio || alumno.coaches.nombre;
         const htmlContent = `
-          <h2>Tu sesión vence en ${diasParaVencer} ${diasParaVencer === 1 ? 'día' : 'días'}</h2>
+          <h2>Se te vence la membresía en ${diasParaVencer} ${diasParaVencer === 1 ? 'día' : 'días'}</h2>
           <p>Hola ${alumno.nombre},</p>
-          <p>Tu sesión con <strong>${alumno.coaches.nombre}</strong> vence el <strong>${new Date(alumno.fecha_renovacion).toLocaleDateString('es-AR')}</strong>.</p>
+          <p>Tu acceso a <strong>${nombreNegocio}</strong> vence el <strong>${new Date(alumno.fecha_renovacion).toLocaleDateString('es-AR')}</strong>.</p>
           <p>Renová ahora para no perder acceso a tu plan.</p>
           <p>Saludos,<br/>El equipo de Mentorify</p>
         `;
 
         await sendBrevoEmail(
           alumno.email,
-          `Tu sesión vence en ${diasParaVencer} ${diasParaVencer === 1 ? 'día' : 'días'}`,
+          `Se te vence la membresía de ${nombreNegocio}`,
           htmlContent
         );
 
