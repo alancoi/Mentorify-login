@@ -7,7 +7,7 @@ export async function getAlumnos() {
   const { data: coach } = await supabase
     .from('coaches')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single();
 
   if (!coach) return [];
@@ -29,7 +29,7 @@ export async function createAlumno(alumno) {
   const { data: coach } = await supabase
     .from('coaches')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single();
 
   const { data, error } = await supabase
@@ -69,7 +69,7 @@ export async function createCoach(data) {
 
   const { data: coach, error } = await supabase
     .from('coaches')
-    .insert([{ user_id: user.id, ...data }])
+    .insert([{ id: user.id, ...data }])
     .select();
 
   if (error) throw error;

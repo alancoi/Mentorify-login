@@ -5,7 +5,7 @@ export async function getCoachId() {
   const { data: coach, error } = await supabase
     .from('coaches')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .maybeSingle();
   
   if (error && error.code !== 'PGRST116') throw error;
@@ -20,7 +20,7 @@ export async function ensureCoach() {
     const { data: newCoach, error } = await supabase
       .from('coaches')
       .insert([{ 
-        user_id: user.id, 
+        id: user.id, 
         nombre: user.email.split('@')[0],
         practica: 'General'
       }])

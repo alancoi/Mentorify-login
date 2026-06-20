@@ -54,7 +54,7 @@ export default function AlumnosPanel() {
       let { data: coach, error: getError } = await supabase
         .from('coaches')
         .select('id, plan, student_limit, nombre')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .maybeSingle();
 
       if (getError && getError.code !== 'PGRST116') throw getError;
