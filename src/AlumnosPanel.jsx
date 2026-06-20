@@ -53,7 +53,7 @@ export default function AlumnosPanel() {
 
       let { data: coach, error: getError } = await supabase
         .from('coaches')
-        .select('id, plan, plan_limite, nombre')
+        .select('id, plan, student_limit, nombre')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -62,7 +62,7 @@ export default function AlumnosPanel() {
       if (!coach) {
         const { data: newCoach, error: insertError } = await supabase
           .from('coaches')
-          .insert([{ user_id: user.id, nombre: user.email.split('@')[0], plan: 'basico', plan_limite: 20 }])
+          .insert([{ user_id: user.id, nombre: user.email.split('@')[0], plan: 'basico', student_limit: 15 }])
           .select();
         
         if (insertError) throw insertError;
@@ -74,7 +74,7 @@ export default function AlumnosPanel() {
       setCoachId(coach.id);
       setCoachNombre(coach.nombre || '');
       setCoachPlan(coach.plan || 'basico');
-      setCoachPlanLimite(coach.plan_limite || 20);
+      setCoachPlanLimite(coach.student_limit || 20);
       loadAlumnos(coach.id);
     } catch (err) {
       console.error('Init error:', err);
@@ -575,7 +575,7 @@ export default function AlumnosPanel() {
           <div className="header-text">
             <h1>Mentorify</h1>
             <p className="header-plan">
-              Plan: <strong>{coachPlan === 'basico' ? 'Básico' : coachPlan === 'medio' ? 'Medio' : 'Pro'}</strong> 
+              Plan: <strong>{coachPlan === 'basico' ? 'Básico' : coachPlan === 'estandar' ? 'Estándar' : 'Premium'}</strong> 
               ({alumnos.length}/{coachPlanLimite} alumnos)
             </p>
           </div>

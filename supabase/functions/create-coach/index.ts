@@ -49,7 +49,7 @@ serve(async (req) => {
         nombre,
         email,
         plan: "basico",
-        plan_limite: 20
+        student_limit: 15
       }])
 
     if (insertError) {
