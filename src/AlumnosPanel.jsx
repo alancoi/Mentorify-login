@@ -62,7 +62,7 @@ export default function AlumnosPanel() {
       if (!coach) {
         const { data: newCoach, error: insertError } = await supabase
           .from('coaches')
-          .insert([{ user_id: user.id, nombre: user.email.split('@')[0], plan: 'basico', student_limit: 15 }])
+          .insert([{ id: user.id, nombre: user.email.split('@')[0], plan: 'basico', student_limit: 15 }])
           .select();
         
         if (insertError) throw insertError;

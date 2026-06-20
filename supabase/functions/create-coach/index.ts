@@ -45,7 +45,7 @@ serve(async (req) => {
     const { error: insertError } = await supabaseAdmin
       .from("coaches")
       .insert([{
-        user_id: user.id,
+        id: user.id,
         nombre,
         email,
         plan: "basico",
