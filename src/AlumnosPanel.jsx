@@ -682,7 +682,7 @@ export default function AlumnosPanel() {
               </p>
             )}
             <p className="header-plan">
-              Plan: <strong>{coachPlan === 'basico' ? 'Básico' : coachPlan === 'estandar' ? 'Estándar' : 'Premium'}</strong>
+              Plan: <strong>{coachPlan === 'Básica' ? 'Básico' : coachPlan === 'Estándar' ? 'Estándar' : 'Premium'}</strong>
               ({alumnos.length}/{coachPlanLimite} alumnos)
             </p>
           </div>
