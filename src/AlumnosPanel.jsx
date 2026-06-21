@@ -299,10 +299,18 @@ export default function AlumnosPanel() {
           Plan: alumno.plan_tipo || '',
           Precio: alumno.plan_precio || '',
           'Fecha inicio': alumno.fecha_inicio
-            ? new Date(alumno.fecha_inicio).toLocaleDateString('es-AR')
+            ? (() => {
+                const str = alumno.fecha_inicio.split('T')[0];
+                const [y, m, d] = str.split('-');
+                return `${d}/${m}/${y}`;
+              })()
             : '',
           'Fecha vencimiento': alumno.fecha_renovacion
-            ? new Date(alumno.fecha_renovacion).toLocaleDateString('es-AR')
+            ? (() => {
+                const str = alumno.fecha_renovacion.split('T')[0];
+                const [y, m, d] = str.split('-');
+                return `${d}/${m}/${y}`;
+              })()
             : '',
           'Días restantes': dr !== null ? dr : '',
           Estado: estadoReal,
@@ -374,7 +382,12 @@ export default function AlumnosPanel() {
   const calcularDiasRestantes = (fechaRenovacion) => {
     if (!fechaRenovacion) return null;
     const hoy = new Date();
-    const renovacion = new Date(fechaRenovacion);
+    hoy.setHours(0, 0, 0, 0);
+    // Parsear fecha sin convertir a Date para evitar desfase de zona horaria
+    const fechaStr = fechaRenovacion.split('T')[0];
+    const [year, month, day] = fechaStr.split('-');
+    const renovacion = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    renovacion.setHours(0, 0, 0, 0);
     const diff = Math.ceil((renovacion - hoy) / (1000 * 60 * 60 * 24));
     return diff;
   };
@@ -419,35 +432,40 @@ export default function AlumnosPanel() {
         return;
       }
       
+      const compensateDate = (dateString) => {
+        if (!dateString) return null;
+        return dateString;
+      };
+
       if (editingAlumno) {
         const { error: err } = await supabase
           .from('alumnos')
           .update({
             nombre: formData.nombre,
             email: formData.email,
-            fecha_inicio: formData.fecha_inicio || null,
-            fecha_renovacion: formData.fecha_renovacion || null,
+            fecha_inicio: compensateDate(formData.fecha_inicio),
+            fecha_renovacion: compensateDate(formData.fecha_renovacion),
             plan_tipo: formData.plan_tipo,
             plan_precio: parseFloat(formData.plan_precio) || 0,
             estado: formData.estado,
             notas: formData.notas || ''
           })
           .eq('id', editingAlumno.id);
-        
+
         if (err) throw err;
       } else {
         const { error: err } = await supabase.from('alumnos').insert([{
           nombre: formData.nombre,
           email: formData.email,
-          fecha_inicio: formData.fecha_inicio || null,
-          fecha_renovacion: formData.fecha_renovacion || null,
+          fecha_inicio: compensateDate(formData.fecha_inicio),
+          fecha_renovacion: compensateDate(formData.fecha_renovacion),
           plan_tipo: formData.plan_tipo,
           plan_precio: parseFloat(formData.plan_precio) || 0,
           estado: formData.estado,
           notas: formData.notas || '',
           coach_id: coachId
         }]);
-        
+
         if (err) throw err;
       }
       
@@ -471,14 +489,24 @@ export default function AlumnosPanel() {
 
   async function handleRenovar(alumno, meses) {
     try {
-      const base = alumno.fecha_renovacion
-        ? new Date(alumno.fecha_renovacion)
-        : new Date();
-      // Si ya venció, renovar desde hoy
-      const desde = base < new Date() ? new Date() : base;
+      let base;
+      if (alumno.fecha_renovacion) {
+        const fechaStr = alumno.fecha_renovacion.split('T')[0];
+        const [year, month, day] = fechaStr.split('-');
+        base = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      } else {
+        base = new Date();
+        base.setHours(0, 0, 0, 0);
+      }
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const desde = base < hoy ? hoy : base;
       const nueva = new Date(desde);
       nueva.setMonth(nueva.getMonth() + meses);
-      const nuevaFecha = nueva.toISOString().split('T')[0];
+      const año = nueva.getFullYear();
+      const mes = String(nueva.getMonth() + 1).padStart(2, '0');
+      const día = String(nueva.getDate()).padStart(2, '0');
+      const nuevaFecha = `${año}-${mes}-${día}`;
 
       const { error } = await supabase
         .from('alumnos')
@@ -497,21 +525,35 @@ export default function AlumnosPanel() {
   async function handleDeleteAlumno(id) {
     if (!confirm('¿Eliminar este alumno?')) return;
     try {
+      console.log('Eliminando alumno:', id);
       const { error: err } = await supabase.from('alumnos').delete().eq('id', id);
-      if (err) throw err;
-      loadAlumnos(coachId);
+      if (err) {
+        console.error('Error eliminando:', err);
+        throw err;
+      }
+      console.log('Alumno eliminado, recargando...');
+      await loadAlumnos(coachId);
+      alert('✅ Alumno eliminado');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.error('Error en handleDeleteAlumno:', err);
+      alert('❌ Error al eliminar: ' + err.message);
     }
   }
 
   function handleEditAlumno(alumno) {
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      // Parse sin usar new Date() para evitar desfase de zona horaria
+      const dateStr = dateString.split('T')[0];
+      return dateStr;
+    };
+
     setEditingAlumno(alumno);
     setFormData({
       nombre: alumno.nombre,
       email: alumno.email || '',
-      fecha_inicio: alumno.fecha_inicio || '',
-      fecha_renovacion: alumno.fecha_renovacion || '',
+      fecha_inicio: formatDate(alumno.fecha_inicio),
+      fecha_renovacion: formatDate(alumno.fecha_renovacion),
       plan_tipo: alumno.plan_tipo || 'Básico',
       plan_precio: alumno.plan_precio || '',
       estado: alumno.estado || 'Activo',
@@ -557,7 +599,10 @@ export default function AlumnosPanel() {
     // Facturación mes pasado: alumnos cuya fecha_inicio fue el mes pasado
     const totalIngresoMesPasado = alumnos
       .filter(a => {
-        const f = new Date(a.fecha_inicio);
+        if (!a.fecha_inicio) return false;
+        const fechaStr = a.fecha_inicio.split('T')[0];
+        const [year, month, day] = fechaStr.split('-');
+        const f = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         return f >= inicioMesPasado && f <= finMesPasado;
       })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
@@ -565,14 +610,20 @@ export default function AlumnosPanel() {
     // Facturación este mes: alumnos cuya fecha_inicio es este mes (hasta hoy)
     const totalIngresoEsteMes = alumnos
       .filter(a => {
-        const f = new Date(a.fecha_inicio);
+        if (!a.fecha_inicio) return false;
+        const fechaStr = a.fecha_inicio.split('T')[0];
+        const [year, month, day] = fechaStr.split('-');
+        const f = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         return f >= inicioMes && f <= hoy;
       })
       .reduce((sum, a) => sum + (parseFloat(a.plan_precio) || 0), 0);
 
     // Clientes nuevos este mes
     const clientesNuevos = alumnos.filter(a => {
-      const f = new Date(a.fecha_inicio);
+      if (!a.fecha_inicio) return false;
+      const fechaStr = a.fecha_inicio.split('T')[0];
+      const [year, month, day] = fechaStr.split('-');
+      const f = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       return f >= inicioMes && f <= finMes;
     }).length;
 
@@ -993,10 +1044,18 @@ export default function AlumnosPanel() {
                       <td>{alumno.plan_tipo}</td>
                       <td className="precio-cell">${alumno.plan_precio}</td>
                       <td className="fecha-cell">
-                        {alumno.fecha_inicio ? new Date(alumno.fecha_inicio).toLocaleDateString('es-AR') : '-'}
+                        {alumno.fecha_inicio ? (() => {
+                          const str = alumno.fecha_inicio.split('T')[0];
+                          const [y, m, d] = str.split('-');
+                          return `${d}/${m}/${y}`;
+                        })() : '-'}
                       </td>
                       <td className="fecha-cell">
-                        {alumno.fecha_renovacion ? new Date(alumno.fecha_renovacion).toLocaleDateString('es-AR') : '-'}
+                        {alumno.fecha_renovacion ? (() => {
+                          const str = alumno.fecha_renovacion.split('T')[0];
+                          const [y, m, d] = str.split('-');
+                          return `${d}/${m}/${y}`;
+                        })() : '-'}
                       </td>
                       <td className={`dias-cell ${esUrgente ? 'urgente' : ''}`}>
                         {diasRestantes !== null ? diasRestantes : '-'}
