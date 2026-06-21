@@ -14,12 +14,12 @@ function determinePlanByPrice(lineItems) {
     totalPrice += parseFloat(item.price) * item.quantity
   }
 
-  // ARS 19.990 → Básica
-  if (totalPrice >= 19000 && totalPrice < 25000) return { plan: 'Básica', limit: 15 }
+  // ARS 19.990 → Básico
+  if (totalPrice >= 19000 && totalPrice < 25000) return { plan: 'basico', limit: 15 }
   // ARS 29.990 → Estándar
-  if (totalPrice >= 25000 && totalPrice < 35000) return { plan: 'Estándar', limit: 50 }
+  if (totalPrice >= 25000 && totalPrice < 35000) return { plan: 'estandar', limit: 50 }
   // ARS 39.990 → Premium
-  if (totalPrice >= 35000) return { plan: 'Premium', limit: 150 }
+  if (totalPrice >= 35000) return { plan: 'premium', limit: 150 }
 
   return { plan: 'Básica', limit: 15 } // Default
 }
