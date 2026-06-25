@@ -222,14 +222,6 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
                 <div style="color: #666; font-size: 12px; margin-top: 10px;">(Podés descargarlo si querés)</div>
               </div>
 
-              ${mercadoPagoUrl ? `
-              <div style="background: #fffbf0; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #ff9800;">
-                <div style="color: #ff9800; font-size: 15px; font-weight: 600; margin-bottom: 12px;">💳 Activá tu pago mensual</div>
-                <div style="color: #555; font-size: 14px; margin-bottom: 15px;">Configura tu suscripción para que el acceso se renueve automáticamente cada mes.</div>
-                <a href="${mercadoPagoUrl}" style="display: inline-block; background: #00a8e8; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">Ir a Mercado Pago</a>
-              </div>
-              ` : ''}
-
               <div style="color: #999; font-size: 12px; margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 20px; line-height: 1.6;">
                 Si tienes preguntas, responde a este email.<br>
                 <strong>Mentorify</strong> — El orden detrás del impacto.
