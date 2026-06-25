@@ -206,7 +206,7 @@ async function sendWelcomeEmail(email, password, orderNumber, plan) {
               </div>
 
               <div style="text-align: center; margin: 15px 0;">
-                <a href="https://mentorify.app/login" style="display: inline-block; background: #6c4dff; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">Acceder a Mentorify</a>
+                <a href="https://mentorify-login.vercel.app" style="display: inline-block; background: #6c4dff; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">Acceder a Mentorify</a>
               </div>
 
               <div style="color: #666; font-size: 13px; margin: 20px 0; line-height: 1.6;">
