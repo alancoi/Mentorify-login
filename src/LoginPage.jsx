@@ -288,11 +288,6 @@ export default function LoginPage({ onLogin }) {
               onFocus={() => setFocusedField('password')}
               onBlur={() => setFocusedField(null)}
             />
-            <div style={{ textAlign: 'right', marginBottom: '20px' }}>
-              <button type="button" style={{ ...styles.link, width: 'auto', display: 'inline', marginTop: 0 }} onClick={() => { setForgotMode(true); setError('') }}>
-                ¿Olvidaste tu contraseña?
-              </button>
-            </div>
             <button
               type="submit"
               style={styles.btn}
@@ -302,12 +297,6 @@ export default function LoginPage({ onLogin }) {
             >
               {loading ? <span style={styles.spinner} /> : 'Ingresar al panel'}
             </button>
-            <p style={{ fontSize: '12px', color: 'var(--text-hint)', textAlign: 'center', marginTop: '24px' }}>
-              ¿No tenés cuenta?{' '}
-              <a href="https://mentorify.app" style={{ color: 'var(--purple)', fontWeight: 500, textDecoration: 'none' }}>
-                Comprá Mentorify
-              </a>
-            </p>
           </form>
         )}
       </div>
