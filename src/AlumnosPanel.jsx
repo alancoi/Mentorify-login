@@ -29,6 +29,7 @@ export default function AlumnosPanel() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorReport, setErrorReport] = useState('');
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -770,6 +771,7 @@ export default function AlumnosPanel() {
             </div>
 
             {successMsg && <p className="success-msg">{successMsg}</p>}
+            {errorReport && <p className="error-msg">{errorReport}</p>}
             <button onClick={() => setShowSettings(false)} className="btn-secondary">Cerrar</button>
           </div>
         </section>
